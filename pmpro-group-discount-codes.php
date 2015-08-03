@@ -1,9 +1,9 @@
 <?php
 /*
-Plugin Name: PMPro Group Discount Codes
+Plugin Name: Paid Memberships Pro - Group Discount Codes Add On
 Plugin URI: http://www.paidmembershipspro.com/pmpro-group-discount-codes/
 Description: Adds features to PMPro to better manage grouped discount codes or large numbers of discount codes.
-Version: .1.1
+Version: .2
 Author: Stranger Studios
 Author URI: http://www.paidmembershipspro.com
 */
@@ -106,6 +106,16 @@ function pmpro_groupcodes_pmpro_save_discount_code($code_id)
 	}
 }
 add_action("pmpro_save_discount_code", "pmpro_groupcodes_pmpro_save_discount_code");
+
+//delete child codes when a discount code is deleted
+function pmpro_groupcodes_pmpro_delete_discount_code($code_id)
+{
+	global $wpdb;
+
+	$sqlQuery = "DELETE FROM $wpdb->pmpro_group_discount_codes WHERE code_parent = '" . intval($code_id) . "'";
+	$wpdb->query($sqlQuery);
+}
+add_action('pmpro_delete_discount_code', 'pmpro_groupcodes_pmpro_delete_discount_code');
 
 //get group code from parent code
 function pmpro_groupcodes_getGroupCode($code_parent_code)
@@ -254,3 +264,18 @@ function pmpro_groupcodes_pmpro_order_discount_code($code, $order)
 	return $code;
 }
 add_filter('pmpro_order_discount_code', 'pmpro_groupcodes_pmpro_order_discount_code', 10, 2);
+
+/*
+Function to add links to the plugin row meta
+*/
+function pmpro_groupcodes_plugin_row_meta($links, $file) {
+	if(strpos($file, 'pmpro-group-discount-codes.php') !== false)
+	{
+		$new_links = array(
+			'<a href="' . esc_url('http://paidmembershipspro.com/support/') . '" title="' . esc_attr( __( 'Visit Customer Support Forum', 'pmpro' ) ) . '">' . __( 'Support', 'pmpro' ) . '</a>',
+		);
+		$links = array_merge($links, $new_links);
+	}
+	return $links;
+}
+add_filter('plugin_row_meta', 'pmpro_groupcodes_plugin_row_meta', 10, 2);

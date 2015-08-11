@@ -55,9 +55,11 @@ function pmpro_groupcodes_pmpro_discount_code_after_settings()
 		$group_codes = array();
 		
 ?>
+<hr />
 <h3>Group Codes</h3>
-<p>Enter additional codes that will use the same settings. Enter one code per line. Codes may only contain letters and numbers. <strong>Keep the main code secret, and leave the uses of the main code blank.</strong> Each code below may only be used once.</p>
-<textarea id="group_codes" name="group_codes" cols="50" rows="8"><?php echo esc_attr(implode("\n", $group_codes));?></textarea>
+<p>Enter additional codes that will use the same settings, one code per line. Codes may only contain letters and numbers (use a <a href="https://www.random.org/strings/" target="_blank">random string generator</a> or a spreadsheet program to create bulk codes). <strong>Keep the main code secret, and leave the uses of the main code blank.</strong> Each code below may only be used once.</p>
+<textarea id="group_codes" name="group_codes" cols="70" rows="8"><?php echo esc_attr(implode("\n", $group_codes));?></textarea>
+<hr />
 <?php
 }
 add_action("pmpro_discount_code_after_settings", "pmpro_groupcodes_pmpro_discount_code_after_settings");
@@ -265,6 +267,19 @@ function pmpro_groupcodes_pmpro_order_discount_code($code, $order)
 }
 add_filter('pmpro_order_discount_code', 'pmpro_groupcodes_pmpro_order_discount_code', 10, 2);
 
+;
+
+/*
+Function to add links to the plugin action links
+*/
+function pmpro_groupcodes_add_action_links($links) {	
+	$new_links = array(
+			'<a href="' . get_admin_url(NULL, '/admin.php?page=pmpro-discountcodes') . '">Manage Discount Codes</a>',
+	);
+	return array_merge($new_links, $links);
+}
+add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'pmpro_groupcodes_add_action_links');
+
 /*
 Function to add links to the plugin row meta
 */
@@ -272,6 +287,7 @@ function pmpro_groupcodes_plugin_row_meta($links, $file) {
 	if(strpos($file, 'pmpro-group-discount-codes.php') !== false)
 	{
 		$new_links = array(
+			'<a href="' . esc_url('http://www.paidmembershipspro.com/add-ons/plus-add-ons/group-discount-codes/' ) . '" title="' . esc_attr( __( 'View Documentation', 'pmpro' ) ) . '">' . __( 'Docs', 'pmpro' ) . '</a>',
 			'<a href="' . esc_url('http://paidmembershipspro.com/support/') . '" title="' . esc_attr( __( 'Visit Customer Support Forum', 'pmpro' ) ) . '">' . __( 'Support', 'pmpro' ) . '</a>',
 		);
 		$links = array_merge($links, $new_links);
@@ -279,3 +295,24 @@ function pmpro_groupcodes_plugin_row_meta($links, $file) {
 	return $links;
 }
 add_filter('plugin_row_meta', 'pmpro_groupcodes_plugin_row_meta', 10, 2);
+
+// add group codes column to the discount codes table view
+function pmpro_groupcodes_pmpro_discountcodes_extra_cols_header()
+{
+	?>
+	<th><?php _e("Group Codes", "pmpro_groupcodes");?></th>
+	<?php
+}
+add_action("pmpro_discountcodes_extra_cols_header", "pmpro_groupcodes_pmpro_discountcodes_extra_cols_header");
+
+function pmpro_groupcodes_pmpro_discountcodes_extra_cols_body($code)
+{
+	global $wpdb;
+	//get group codes
+	if($code->id > 0)
+		$group_codes = $wpdb->get_col("SELECT code FROM $wpdb->pmpro_group_discount_codes WHERE code_parent = '" . $code->id . "'");
+	?>
+	<td><?php if(!empty($group_codes)) { echo count($group_codes); } else { echo '--'; } ?></td>
+	<?php
+}
+add_action("pmpro_discountcodes_extra_cols_body", "pmpro_groupcodes_pmpro_discountcodes_extra_cols_body");

@@ -3,7 +3,7 @@
 Plugin Name: Paid Memberships Pro - Group Discount Codes Add On
 Plugin URI: http://www.paidmembershipspro.com/pmpro-group-discount-codes/
 Description: Adds features to PMPro to better manage grouped discount codes or large numbers of discount codes.
-Version: .2
+Version: .3
 Author: Stranger Studios
 Author URI: http://www.paidmembershipspro.com
 */
@@ -147,7 +147,7 @@ function pmpro_groupcodes_init()
 			//check if this group code was used already
 			if($group_code->order_id > 0)		
 				return;
-			
+
 			//swap with the parent
 			$code_parent = $wpdb->get_var("SELECT code FROM $wpdb->pmpro_discount_codes WHERE id = '" . $group_code->code_parent . "' LIMIT 1");
 			if(!empty($code_parent))
@@ -244,8 +244,8 @@ function pmpro_groupcodes_pmpro_added_order($order)
 		$wpdb->query($sqlQuery);
 		
 		//save order id in group code table
-		$sqlQuery = "UPDATE $wpdb->pmpro_group_discount_codes SET order_id = '" . intval($order->id) . "' LIMIT 1";
-		$wpdb->query($sqlQuery);		
+		$sqlQuery = "UPDATE $wpdb->pmpro_group_discount_codes SET order_id = '" . intval($order->id) . "'WHERE code='" . $group_discount_code . "' LIMIT 1";
+		$wpdb->query($sqlQuery);
 	}
 	
 	return $order;

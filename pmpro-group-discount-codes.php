@@ -267,7 +267,19 @@ function pmpro_groupcodes_pmpro_order_discount_code($code, $order)
 }
 add_filter('pmpro_order_discount_code', 'pmpro_groupcodes_pmpro_order_discount_code', 10, 2);
 
-;
+/*
+ * Replace master codes with group discount codes in emails.
+ */
+function pmpro_groupcodes_pmpro_email_data($data, $email) {
+
+	global $group_discount_code, $discount_code;
+
+	if(!empty($group_discount_code))
+		$data['discount_code'] = str_replace($discount_code, $group_discount_code, $data['discount_code']);
+
+	return $data;
+}
+add_filter('pmpro_email_data', 'pmpro_groupcodes_pmpro_email_data', 10, 2);
 
 /*
 Function to add links to the plugin action links

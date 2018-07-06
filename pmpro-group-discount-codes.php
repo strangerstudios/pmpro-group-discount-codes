@@ -317,43 +317,19 @@ function pmpro_groupcodes_pmpro_discountcodes_extra_cols_header()
 }
 add_action("pmpro_discountcodes_extra_cols_header", "pmpro_groupcodes_pmpro_discountcodes_extra_cols_header");
 
-/**
- * Function to get all orders that a discount code is used. Orders according to date.
- * @return object Returns order object with discount code queried.
- */
-function pmpro_groupcodes_get_orders_by_discount_code( $discount_code ) {
-	global $wpdb;
-
-	if( empty( $discount_code ) ) {
-		return;
-	}
-
-	$discounted_orders = $wpdb->get_results( $wpdb->prepare(
-		"SELECT orders.*, codes.code as discount_code
-		FROM $wpdb->pmpro_membership_orders orders
-		JOIN $wpdb->pmpro_discount_codes_uses uses
-		ON orders.id = uses.order_id
-		JOIN $wpdb->pmpro_discount_codes codes
-		ON uses.code_id = codes.id
-		WHERE codes.code = '%s'
-		ORDER BY uses.timestamp DESC",
-		$discount_code ) );
-
-	return $discounted_orders;
-}
-
 function pmpro_groupcodes_pmpro_discountcodes_extra_cols_body($code)
 {
 	global $wpdb;
-	//get group codes
-	if ($code->id > 0)
-		$group_codes = $wpdb->get_col("SELECT code FROM $wpdb->pmpro_group_discount_codes WHERE code_parent = '" . $code->id . "'");
+	
+	//get number of group codes and number of codes that have been used
+	if ($code->id > 0) {
+		$number_total_codes = $wpdb->get_var( "SELECT COUNT(code) FROM $wpdb->pmpro_group_discount_codes WHERE code_parent = '" . esc_sql( $code->id ) . "'"); 
+		$number_used_codes = $wpdb->get_var( "SELECT COUNT(code) FROM $wpdb->pmpro_group_discount_codes WHERE code_parent = '" . esc_sql( $code->id ) . "' AND order_id > 0"); 
+	}
 	?>
 	<td>
-		<?php if ( is_array( $group_codes ) && ! empty( $group_codes[0] ) ) {
-			echo '<strong>' . count( pmpro_groupcodes_get_orders_by_discount_code( $code->code ) ) . '</strong>';
-			echo "/";
-			echo count($group_codes);
+		<?php if ( ! empty( $number_total_codes ) ) {
+			echo '<strong>' . $number_used_codes . '</strong>/' . $number_total_codes;
 		} else {
 			echo '--';
 		} ?>

@@ -312,7 +312,6 @@ add_filter('plugin_row_meta', 'pmpro_groupcodes_plugin_row_meta', 10, 2);
 function pmpro_groupcodes_pmpro_discountcodes_extra_cols_header()
 {
 	?>
-	<th><?php _e("Group Codes", "pmpro_groupcodes");?></th>
 	<th><?php _e("Group Code Uses", "pmpro_groupcodes");?></th>
 	<?php
 }
@@ -347,11 +346,18 @@ function pmpro_groupcodes_pmpro_discountcodes_extra_cols_body($code)
 {
 	global $wpdb;
 	//get group codes
-	if($code->id > 0)
+	if ($code->id > 0)
 		$group_codes = $wpdb->get_col("SELECT code FROM $wpdb->pmpro_group_discount_codes WHERE code_parent = '" . $code->id . "'");
 	?>
-	<td><?php if(!empty($group_codes)) { echo count($group_codes); } else { echo '--'; } ?></td>
-	<td><?php echo count( pmpro_groupcodes_get_orders_by_discount_code( $code->code ) ); ?></td>
+	<td>
+		<?php if ( is_array( $group_codes ) && ! empty( $group_codes[0] ) ) {
+			echo '<strong>' . count( pmpro_groupcodes_get_orders_by_discount_code( $code->code ) ) . '</strong>';
+			echo "/";
+			echo count($group_codes);
+		} else {
+			echo '--';
+		} ?>
+	</td>
 	<?php
 }
 add_action("pmpro_discountcodes_extra_cols_body", "pmpro_groupcodes_pmpro_discountcodes_extra_cols_body");

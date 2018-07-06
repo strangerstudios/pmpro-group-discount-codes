@@ -1,11 +1,11 @@
 <?php
 /*
 Plugin Name: Paid Memberships Pro - Group Discount Codes Add On
-Plugin URI: http://www.paidmembershipspro.com/pmpro-group-discount-codes/
+Plugin URI: https://www.paidmembershipspro.com/add-ons/group-discount-codes/
 Description: Adds features to PMPro to better manage grouped discount codes or large numbers of discount codes.
-Version: .3.1
-Author: Stranger Studios
-Author URI: http://www.paidmembershipspro.com
+Version: .3.2
+Author: Paid Memberships Pro
+Author URI: https://www.paidmembershipspro.com/
 */
 
 /*
@@ -299,8 +299,8 @@ function pmpro_groupcodes_plugin_row_meta($links, $file) {
 	if(strpos($file, 'pmpro-group-discount-codes.php') !== false)
 	{
 		$new_links = array(
-			'<a href="' . esc_url('http://www.paidmembershipspro.com/add-ons/plus-add-ons/group-discount-codes/' ) . '" title="' . esc_attr( __( 'View Documentation', 'pmpro' ) ) . '">' . __( 'Docs', 'pmpro' ) . '</a>',
-			'<a href="' . esc_url('http://paidmembershipspro.com/support/') . '" title="' . esc_attr( __( 'Visit Customer Support Forum', 'pmpro' ) ) . '">' . __( 'Support', 'pmpro' ) . '</a>',
+			'<a href="' . esc_url('https://www.paidmembershipspro.com/add-ons/group-discount-codes/' ) . '" title="' . esc_attr( __( 'View Documentation', 'pmpro' ) ) . '">' . __( 'Docs', 'pmpro' ) . '</a>',
+			'<a href="' . esc_url('https://www.paidmembershipspro.com/support/') . '" title="' . esc_attr( __( 'Visit Customer Support Forum', 'pmpro' ) ) . '">' . __( 'Support', 'pmpro' ) . '</a>',
 		);
 		$links = array_merge($links, $new_links);
 	}

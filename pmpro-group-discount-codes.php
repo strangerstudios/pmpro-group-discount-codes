@@ -337,3 +337,28 @@ function pmpro_groupcodes_pmpro_discountcodes_extra_cols_body($code)
 	<?php
 }
 add_action("pmpro_discountcodes_extra_cols_body", "pmpro_groupcodes_pmpro_discountcodes_extra_cols_body");
+
+/**
+ * Adds an extra colum to your Memberships > Orders > Export to CSV file. Displays the group discount code used.
+ */
+//Set up the column header and callback function
+function pmpro_groupcodes_pmpro_orders_csv_extra_columns( $columns ) {
+	$columns['group_code'] = 'pmpro_groupcodes_pmpro_orders_csv_extra_columns_group_code';
+	return $columns;
+}
+add_filter( 'pmpro_orders_csv_extra_columns', 'pmpro_groupcodes_pmpro_orders_csv_extra_columns' );
+
+// The actual call back for the column
+function pmpro_groupcodes_pmpro_orders_csv_extra_columns_group_code( $order ) {
+	global $wpdb;
+	
+	// We could get this from the pmpro_group_discount_codes table, but using the notes saves a DB query.
+	$group_code = pmpro_getMatches( "/{GROUPCODE:([^}]*)}/", $order->notes, true );
+	
+	if( !empty( $group_code ) ) {
+		return $group_code;
+	} else {
+		return '';
+	}
+}
+

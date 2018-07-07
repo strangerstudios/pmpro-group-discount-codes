@@ -33,6 +33,7 @@ Please post it in the issues section of GitHub and we'll fix it as soon as we ca
 
 = .3.2 =
 * ENHANCEMENT: Added Group Code Uses column to Memberships > Discount Codes to show a sum of child codes that have been used.
+* ENHANCEMENT: Added a Group Code column to the PMPro Orders CSV Export.
 
 = .3.1. =
 * BUG: Now sending group codes instead of master code in emails.

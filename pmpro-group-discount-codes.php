@@ -196,7 +196,7 @@ add_filter('pmpro_check_discount_code', 'pmpro_groupcodes_pmpro_check_discount_c
 //fix code level when a group code is used
 function pmpro_groupcodes_pmpro_discount_code_level($code_level, $discount_code_id)
 {
-	if(empty($discount_code_level) && !empty($_REQUEST['code']))
+	if(!empty($_REQUEST['code']))
 	{
 		$group_code = pmpro_groupcodes_getGroupCode($_REQUEST['code']);
 		if(!empty($group_code))

@@ -50,306 +50,313 @@ if(is_admin())
 	}
 }
 
-//show the global settings on the discount code page
-function pmpro_groupcodes_pmpro_discount_code_after_settings()
-{
+/**
+ * Add the group code field to the discount code form.
+ */
+function pmpro_groupcodes_pmpro_discount_code_after_settings() {
 	global $wpdb;
 
-	//get group codes
+	// Get the current group codes.
 	$code_id = intval($_REQUEST['edit']);
-	if($code_id > 0)
-		$group_codes = $wpdb->get_col("SELECT code FROM $wpdb->pmpro_group_discount_codes WHERE code_parent = '" . $code_id . "'");
-	else
+	if ( $code_id > 0 ) {
+		$group_codes = $wpdb->get_col( "SELECT code FROM $wpdb->pmpro_group_discount_codes WHERE code_parent = '" . $code_id . "'" );
+	} else {
 		$group_codes = array();
+	}
 
-?>
-<hr />
-<h3><?php esc_html_e( 'Group Codes', 'pmpro-group-discount-codes' ); ?></h3>
-<p>
-	<?php
-	echo wp_kses(
-		sprintf(
-			// translators: %s is a link to a random string generator.
-			__( 'Enter additional codes that will use the same settings, one code per line. Codes may only contain letters and numbers (use a <a href="%s" target="_blank">random string generator</a> or a spreadsheet program to create bulk codes). <strong>Keep the main code secret, and leave the uses of the main code blank.</strong> Each code below may only be used once.', 'pmpro-group-discount-codes' ),
-			'https://www.random.org/strings/'
-		),
-		array(
-			'strong' => array(),
-			'a' => array(
-				'href' => array(),
-				'target' => array()
-			)
-		)
-	);
+	// Show the field.
 	?>
-</p>
-<textarea id="group_codes" name="group_codes" cols="70" rows="8"><?php echo esc_attr(implode("\n", $group_codes));?></textarea>
-<hr />
-<?php
+	<hr />
+	<h3><?php esc_html_e( 'Group Codes', 'pmpro-group-discount-codes' ); ?></h3>
+	<p>
+		<?php
+		echo wp_kses(
+			sprintf(
+				// translators: %s is a link to a random string generator.
+				__( 'Enter additional codes that will use the same settings, one code per line. Codes may only contain letters and numbers (use a <a href="%s" target="_blank">random string generator</a> or a spreadsheet program to create bulk codes). <strong>Keep the main code secret, and leave the uses of the main code blank.</strong> Each code below may only be used once.', 'pmpro-group-discount-codes' ),
+				'https://www.random.org/strings/'
+			),
+			array(
+				'strong' => array(),
+				'a' => array(
+					'href' => array(),
+					'target' => array()
+				)
+			)
+		);
+		?>
+	</p>
+	<textarea id="group_codes" name="group_codes" cols="70" rows="8"><?php echo esc_attr( implode( "\n", $group_codes ) );?></textarea>
+	<hr />
+	<?php
 }
-add_action("pmpro_discount_code_after_settings", "pmpro_groupcodes_pmpro_discount_code_after_settings");
+add_action( 'pmpro_discount_code_after_settings', 'pmpro_groupcodes_pmpro_discount_code_after_settings' );
 
-//save the global settings
-function pmpro_groupcodes_pmpro_save_discount_code($code_id)
-{
+/**
+ * Save the group codes.
+ *
+ * @param int $code_id The ID of the discount code.
+ */
+function pmpro_groupcodes_pmpro_save_discount_code( $code_id ) {
 	global $wpdb;
 
-	//fix for PMPro 1.7.15.2 and under
-	if($code_id == '-1' && !empty($_REQUEST['edit']) && $_REQUEST['edit'] == '-1')
-	{
-		//assume last code entered is the one being hooked
-		$code_id = $wpdb->get_var("SELECT id FROM $wpdb->pmpro_discount_codes ORDER BY id DESC LIMIT 1");
+	// Make sure we have a code ID.
+	if ( empty( $code_id ) ) {
+		return;
 	}
 
-	if(!empty($code_id))
-	{
-		//get old codes
-		$old_group_codes = $wpdb->get_col("SELECT code FROM $wpdb->pmpro_group_discount_codes WHERE code_parent = '" . $code_id . "'");
+	// Get old codes.
+	$old_group_codes = $wpdb->get_col("SELECT code FROM $wpdb->pmpro_group_discount_codes WHERE code_parent = '" . $code_id . "'");
 
-		//get new codes
-		$group_codes = $_REQUEST['group_codes'];
-		$group_codes = str_replace("\r", "", $group_codes);
-		$group_codes = explode("\n", str_replace(array(", ", ",", "; ", ";", " "), "\n", $group_codes));
+	// Get new codes.
+	$group_codes = $_REQUEST['group_codes'];
+	$group_codes = str_replace( "\r", "", $group_codes );
+	$group_codes = explode( "\n", str_replace( array( ", ", ",", "; ", ";", " " ), "\n", $group_codes ) );
 
-		//figure out which codes to add and delete
-		$intersect = array_intersect($old_group_codes, $group_codes);
-		$codes_to_add = array_diff($group_codes, $intersect);
-		$codes_to_delete = array_diff($old_group_codes, $intersect);
+	// Figure out which codes to add and delete.
+	$intersect = array_intersect( $old_group_codes, $group_codes );
+	$codes_to_add = array_diff( $group_codes, $intersect );
+	$codes_to_delete = array_diff( $old_group_codes, $intersect );
 
-		//add them
-		foreach($codes_to_add as $code)
-		{
-			$sqlQuery = "INSERT IGNORE INTO $wpdb->pmpro_group_discount_codes (id, code, code_parent) VALUES('', '" . esc_sql(trim($code)) . "', '" . $code_id . "')";
-			$wpdb->query($sqlQuery);
-		}
+	// Add new group codes.
+	foreach( $codes_to_add as $code ) {
+		$sqlQuery = "INSERT IGNORE INTO $wpdb->pmpro_group_discount_codes (id, code, code_parent) VALUES('', '" . esc_sql( trim( $code ) ) . "', '" . $code_id . "')";
+		$wpdb->query( $sqlQuery );
+	}
 
-		//delete them
-		foreach($codes_to_delete as $code)
-		{
-			$sqlQuery = "DELETE FROM $wpdb->pmpro_group_discount_codes WHERE code = '" . esc_sql($code) . "' LIMIT 1";
-			$wpdb->query($sqlQuery);
-		}
-
+	// Delete old group codes.
+	foreach( $codes_to_delete as $code ) {
+		$sqlQuery = "DELETE FROM $wpdb->pmpro_group_discount_codes WHERE code = '" . esc_sql( $code ) . "' LIMIT 1";
+		$wpdb->query( $sqlQuery );
 	}
 }
-add_action("pmpro_save_discount_code", "pmpro_groupcodes_pmpro_save_discount_code");
+add_action( 'pmpro_save_discount_code', 'pmpro_groupcodes_pmpro_save_discount_code' );
 
-//delete child codes when a discount code is deleted
-function pmpro_groupcodes_pmpro_delete_discount_code($code_id)
-{
+/**
+ * Delete group codes when the parent code is deleted.
+ *
+ * @param int $code_id The ID of the parent discount code.
+ */
+function pmpro_groupcodes_pmpro_delete_discount_code( $code_id ) {
 	global $wpdb;
 
-	$sqlQuery = "DELETE FROM $wpdb->pmpro_group_discount_codes WHERE code_parent = '" . intval($code_id) . "'";
+	$sqlQuery = "DELETE FROM $wpdb->pmpro_group_discount_codes WHERE code_parent = '" . intval( $code_id ) . "'";
 	$wpdb->query($sqlQuery);
 }
-add_action('pmpro_delete_discount_code', 'pmpro_groupcodes_pmpro_delete_discount_code');
+add_action( 'pmpro_delete_discount_code', 'pmpro_groupcodes_pmpro_delete_discount_code' );
 
-//get group code from parent code
-function pmpro_groupcodes_getGroupCode($code_parent_code)
-{
+/**
+ * Get the database entry for a group code.
+ *
+ * @param string $group_code The group code.
+ * @return object|false The database entry for the group code, or false if not found.
+ */
+function pmpro_groupcodes_getGroupCode( $group_code ) {
 	global $wpdb;
-	return $wpdb->get_row("SELECT * FROM $wpdb->pmpro_group_discount_codes WHERE code = '" . esc_sql(strtolower(trim($code_parent_code))) . "' LIMIT 1");
+	return $wpdb->get_row( "SELECT * FROM $wpdb->pmpro_group_discount_codes WHERE code = '" . esc_sql( strtolower( trim( $group_code ) ) ) . "' LIMIT 1" );
 }
 
-//swap real code for group code
-function pmpro_groupcodes_init()
-{
-	if(!empty($_REQUEST['discount_code']))
-	{
+/**
+ * Swap real code for group code.
+ */
+function pmpro_groupcodes_init() {
+	if ( ! empty( $_REQUEST['discount_code'] ) ) {
 		global $wpdb;
 
 		$discount_code = $_REQUEST['discount_code'];
 
-		//check if it's a real code first, if so, leave it alone
-		$is_real_code = $wpdb->get_var("SELECT id FROM $wpdb->pmpro_discount_codes WHERE code = '" . esc_sql(strtolower(trim($discount_code))) . "' LIMIT 1");
-		if($is_real_code)
+		// Check if it's a real code first, if so, leave it alone.
+		$is_real_code = $wpdb->get_var( "SELECT id FROM $wpdb->pmpro_discount_codes WHERE code = '" . esc_sql(strtolower(trim($discount_code))) . "' LIMIT 1" );
+		if ( $is_real_code ) {
 			return;
+		}
 
-		//check if it's a group code
-		$group_code = pmpro_groupcodes_getGroupCode($discount_code);
-		if($group_code)
-		{
-			//check if this group code was used already
-			if($group_code->order_id > 0)
+		// Check if it's a group code.
+		$group_code = pmpro_groupcodes_getGroupCode( $discount_code );
+		if ( $group_code ) {
+			// Check if this group code was used already.
+			if ( $group_code->order_id > 0 ) {
 				return;
+			}
 
-			//swap with the parent
-			$code_parent = $wpdb->get_var("SELECT code FROM $wpdb->pmpro_discount_codes WHERE id = '" . $group_code->code_parent . "' LIMIT 1");
-			if(!empty($code_parent))
-			{
-				//swap in request
+			// Swap with the parent.
+			$code_parent = $wpdb->get_var( "SELECT code FROM $wpdb->pmpro_discount_codes WHERE id = '" . $group_code->code_parent . "' LIMIT 1" );
+			if ( ! empty( $code_parent ) ) {
+				// Swap in request.
 				$_REQUEST['discount_code'] = $code_parent;
 
-				//save to switch back later
+				// Save to switch back later.
 				global $group_discount_code;
 				$group_discount_code = $discount_code;
 			}
 		}
 	}
 }
-add_action('init', 'pmpro_groupcodes_init', 1);
+add_action( 'init', 'pmpro_groupcodes_init', 1 );
 
 /*
-	Make sure checkDiscountCode works for group codes
-*/
-function pmpro_groupcodes_pmpro_check_discount_code($okay, $dbcode, $level_id, $code)
-{
-	//if okay, just return
-	if($okay)
+ * Make sure checkDiscountCode works for group codes.
+ *
+ * @param bool|string $okay True if okay, false or error message string if not okay
+ * @param string $dbcode The discount code.
+ * @param int $level_id The level ID.
+ * @param string $code The discount code.
+ * @return bool|string True if okay, false or error message string if not okay
+ */
+function pmpro_groupcodes_pmpro_check_discount_code( $okay, $dbcode, $level_id, $code ) {
+	// If okay, just return.
+	if ( $okay === true ) {
 		return $okay;
+	}
 
-	$group_code = pmpro_groupcodes_getGroupCode($code);
+	$group_code = pmpro_groupcodes_getGroupCode( $code );
 
-	if(!empty($group_code))
-	{
+	if ( ! empty( $group_code ) ) {
 		global $wpdb;
 
-		//check if this group code was used already
-		if($group_code->order_id > 0)
+		// Check if this group code was used already.
+		if ( $group_code->order_id > 0 ) {
 			return esc_html__( 'This code has already been used.', 'pmpro-group-discount-codes' );
+		}
 
-		//okay check parent
-		$code_parent = $wpdb->get_var("SELECT code FROM $wpdb->pmpro_discount_codes WHERE id = '" . $group_code->code_parent . "' LIMIT 1");
-		if(!empty($code_parent))
+		// Okay check parent.
+		$code_parent = $wpdb->get_var( "SELECT code FROM $wpdb->pmpro_discount_codes WHERE id = '" . $group_code->code_parent . "' LIMIT 1" );
+		if ( ! empty( $code_parent) ) {
 			return pmpro_checkDiscountCode($code_parent, $level_id);
+		}
 	}
 
 	return $okay;
 }
-add_filter('pmpro_check_discount_code', 'pmpro_groupcodes_pmpro_check_discount_code', 10, 4);
+add_filter( 'pmpro_check_discount_code', 'pmpro_groupcodes_pmpro_check_discount_code', 10, 4 );
 
-//fix code level when a group code is used
-function pmpro_groupcodes_pmpro_discount_code_level($code_level, $discount_code_id)
-{
-	if(!empty($_REQUEST['code']))
-	{
-		$group_code = pmpro_groupcodes_getGroupCode($_REQUEST['code']);
-		if(!empty($group_code))
-		{
-			//check if this group code was used already
-			if($group_code->order_id > 0)
+/**
+ * Fix code level when a group code is used.
+ *
+ * @param object $code_level The level object.
+ * @param int $discount_code_id The discount code ID used.
+ * @return object The level object.
+ */
+function pmpro_groupcodes_pmpro_discount_code_level( $code_level, $discount_code_id ) {
+	if ( ! empty( $_REQUEST['code'] ) ) {
+		$group_code = pmpro_groupcodes_getGroupCode( $_REQUEST['code'] );
+		if ( ! empty( $group_code ) ) {
+			// Check if this group code was used already.
+			if ( $group_code->order_id > 0 ) {
 				return $code_level;
+			}
 
 			global $wpdb;
-			$code_parent = $wpdb->get_var("SELECT code FROM $wpdb->pmpro_discount_codes WHERE id = '" . $group_code->code_parent . "' LIMIT 1");
+			$code_parent = $wpdb->get_var( "SELECT code FROM $wpdb->pmpro_discount_codes WHERE id = '" . $group_code->code_parent . "' LIMIT 1") ;
 
-			if(!empty($code_parent))
-			{
+			if ( ! empty( $code_parent ) ) {
 				$sqlQuery = "SELECT l.id, cl.*, l.name, l.description, l.allow_signups FROM $wpdb->pmpro_discount_codes_levels cl LEFT JOIN $wpdb->pmpro_membership_levels l ON cl.level_id = l.id LEFT JOIN $wpdb->pmpro_discount_codes dc ON dc.id = cl.code_id WHERE dc.code = '" . $code_parent . "' AND cl.level_id = '" . $code_level->id . "' LIMIT 1";
-				$code_level = $wpdb->get_row($sqlQuery);
+				$code_level = $wpdb->get_row( $sqlQuery );
 			}
 		}
 	}
 
 	return $code_level;
 }
-add_filter('pmpro_discount_code_level', 'pmpro_groupcodes_pmpro_discount_code_level', 10, 2);
+add_filter( 'pmpro_discount_code_level', 'pmpro_groupcodes_pmpro_discount_code_level', 10, 2 );
 
-//hide group codes from discount code page
-function pmpro_groupcodes_template_redirect()
-{
+/**
+ * Hide group codes from discount code page.
+ */
+function pmpro_groupcodes_template_redirect() {
 	global $discount_code, $group_discount_code;
-	if(!empty($group_discount_code))
+	if ( ! empty( $group_discount_code ) ) {
 		$discount_code = $group_discount_code;
+	}
 }
-add_action('template_redirect', 'pmpro_groupcodes_template_redirect');
+add_action( 'template_redirect', 'pmpro_groupcodes_template_redirect' );
 
-//add note RE group code and save order_id in group code table
-function pmpro_groupcodes_pmpro_added_order($order)
-{
+/**
+ * Add note RE group code and save order_id in group code table.
+ *
+ * @param MemberOrder $order The order object.
+ * @return MemberOrder The order object.
+ */
+function pmpro_groupcodes_pmpro_added_order( $order ) {
 	global $group_discount_code;
 
-	if(!empty($group_discount_code))
-	{
+	if ( ! empty( $group_discount_code ) ) {
 		global $wpdb;
 
-		//add group code to note
+		// Add group code to note.
 		$order->notes .= "\n---\n{GROUPCODE:" . $group_discount_code . "}\n---\n";
-		$sqlQuery = "UPDATE $wpdb->pmpro_membership_orders SET notes = '" . esc_sql($order->notes) . "' WHERE id = '" . intval($order->id) . "' LIMIT 1";
-		$wpdb->query($sqlQuery);
+		$sqlQuery = "UPDATE $wpdb->pmpro_membership_orders SET notes = '" . esc_sql( $order->notes ) . "' WHERE id = '" . intval( $order->id ) . "' LIMIT 1";
+		$wpdb->query( $sqlQuery );
 
-		//save order id in group code table
-		$sqlQuery = "UPDATE $wpdb->pmpro_group_discount_codes SET order_id = '" . intval($order->id) . "'WHERE code='" . $group_discount_code . "' LIMIT 1";
-		$wpdb->query($sqlQuery);
+		// Save order id in group code table.
+		$sqlQuery = "UPDATE $wpdb->pmpro_group_discount_codes SET order_id = '" . intval( $order->id ) . "'WHERE code='" . $group_discount_code . "' LIMIT 1";
+		$wpdb->query( $sqlQuery );
 	}
 
 	return $order;
 }
-add_action('pmpro_added_order', 'pmpro_groupcodes_pmpro_added_order');
+add_action( 'pmpro_added_order', 'pmpro_groupcodes_pmpro_added_order' );
 
-//filter discount code when showing invoice
-function pmpro_groupcodes_pmpro_order_discount_code($code, $order)
-{
-	//look for code in notes
-	$group_code = pmpro_getMatches("/{GROUPCODE:([^}]*)}/", $order->notes, true);
+/**
+ * Filter discount code when showing invoice.
+ *
+ * @param object $code The discount code.
+ * @param MemberOrder $order The order object.
+ * @return object The discount code.
+ */
+function pmpro_groupcodes_pmpro_order_discount_code( $code, $order ) {
+	// Look for code in notes.
+	$group_code = pmpro_getMatches( "/{GROUPCODE:([^}]*)}/", $order->notes, true );
 
-	if(!empty($group_code))
-	{
+	if ( ! empty( $group_code ) ) {
 		$code->code = $group_code;
 	}
 
 	return $code;
 }
-add_filter('pmpro_order_discount_code', 'pmpro_groupcodes_pmpro_order_discount_code', 10, 2);
+add_filter( 'pmpro_order_discount_code', 'pmpro_groupcodes_pmpro_order_discount_code', 10, 2 );
 
 /*
  * Replace master codes with group discount codes in emails.
+ *
+ * @param array $data The email data.
+ * @param PMProEmail $email The email object.
+ * @return array The email data.
  */
-function pmpro_groupcodes_pmpro_email_data($data, $email) {
+function pmpro_groupcodes_pmpro_email_data( $data, $email ) {
 
 	global $group_discount_code, $discount_code;
 
-	if(!empty($group_discount_code))
-		$data['discount_code'] = str_replace($discount_code, $group_discount_code, $data['discount_code']);
+	if ( ! empty( $group_discount_code ) ) {
+		$data['discount_code'] = str_replace( $discount_code, $group_discount_code, $data['discount_code'] );
+	}
 
 	return $data;
 }
-add_filter('pmpro_email_data', 'pmpro_groupcodes_pmpro_email_data', 10, 2);
+add_filter( 'pmpro_email_data', 'pmpro_groupcodes_pmpro_email_data', 10, 2 );
 
-/*
-Function to add links to the plugin action links
-*/
-function pmpro_groupcodes_add_action_links($links) {
-	$new_links = array(
-			'<a href="' . get_admin_url(NULL, '/admin.php?page=pmpro-discountcodes') . '">' . esc_html__( 'Manage Discount Codes', 'pmpro-group-discount-codes' ) . '</a>',
-	);
-	return array_merge($new_links, $links);
-}
-add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'pmpro_groupcodes_add_action_links');
-
-/*
-Function to add links to the plugin row meta
-*/
-function pmpro_groupcodes_plugin_row_meta($links, $file) {
-	if(strpos($file, 'pmpro-group-discount-codes.php') !== false)
-	{
-		$new_links = array(
-			'<a href="' . esc_url('https://www.paidmembershipspro.com/add-ons/group-discount-codes/' ) . '" title="' . esc_attr( __( 'View Documentation', 'pmpro-group-discount-codes' ) ) . '">' . __( 'Docs', 'pmpro-group-discount-codes' ) . '</a>',
-			'<a href="' . esc_url('https://www.paidmembershipspro.com/support/') . '" title="' . esc_attr( __( 'Visit Customer Support Forum', 'pmpro-group-discount-codes' ) ) . '">' . __( 'Support', 'pmpro-group-discount-codes' ) . '</a>',
-		);
-		$links = array_merge($links, $new_links);
-	}
-	return $links;
-}
-add_filter('plugin_row_meta', 'pmpro_groupcodes_plugin_row_meta', 10, 2);
-
-// add group codes column to the discount codes table view
-function pmpro_groupcodes_pmpro_discountcodes_extra_cols_header()
-{
+/**
+ * Add group codes column to the discount codes table view.
+ */
+function pmpro_groupcodes_pmpro_discountcodes_extra_cols_header() {
 	?>
 	<th><?php esc_html_e( 'Group Code Uses', 'pmpro-group-discount-codes' );?></th>
 	<?php
 }
-add_action("pmpro_discountcodes_extra_cols_header", "pmpro_groupcodes_pmpro_discountcodes_extra_cols_header");
+add_action( 'pmpro_discountcodes_extra_cols_header', 'pmpro_groupcodes_pmpro_discountcodes_extra_cols_header' );
 
-function pmpro_groupcodes_pmpro_discountcodes_extra_cols_body($code)
-{
+/**
+ * Fill the group codes column in the discount codes table view.
+ *
+ * @param object $code The discount code.
+ */
+function pmpro_groupcodes_pmpro_discountcodes_extra_cols_body( $code ) {
 	global $wpdb;
 	
-	//get number of group codes and number of codes that have been used
-	if ($code->id > 0) {
-		$number_total_codes = $wpdb->get_var( "SELECT COUNT(code) FROM $wpdb->pmpro_group_discount_codes WHERE code_parent = '" . esc_sql( $code->id ) . "'"); 
-		$number_used_codes = $wpdb->get_var( "SELECT COUNT(code) FROM $wpdb->pmpro_group_discount_codes WHERE code_parent = '" . esc_sql( $code->id ) . "' AND order_id > 0"); 
+	// Get number of group codes and number of codes that have been used.
+	if ( $code->id > 0 ) {
+		$number_total_codes = $wpdb->get_var( "SELECT COUNT(code) FROM $wpdb->pmpro_group_discount_codes WHERE code_parent = '" . esc_sql( $code->id ) . "'" ); 
+		$number_used_codes = $wpdb->get_var( "SELECT COUNT(code) FROM $wpdb->pmpro_group_discount_codes WHERE code_parent = '" . esc_sql( $code->id ) . "' AND order_id > 0" ); 
 	}
 	?>
 	<td>
@@ -361,29 +368,68 @@ function pmpro_groupcodes_pmpro_discountcodes_extra_cols_body($code)
 	</td>
 	<?php
 }
-add_action("pmpro_discountcodes_extra_cols_body", "pmpro_groupcodes_pmpro_discountcodes_extra_cols_body");
+add_action( 'pmpro_discountcodes_extra_cols_body', 'pmpro_groupcodes_pmpro_discountcodes_extra_cols_body' );
 
 /**
  * Adds an extra colum to your Memberships > Orders > Export to CSV file. Displays the group discount code used.
+ *
+ * @param array $columns The columns to export.
+ * @return array The columns to export.
  */
-//Set up the column header and callback function
 function pmpro_groupcodes_pmpro_orders_csv_extra_columns( $columns ) {
 	$columns['group_code'] = 'pmpro_groupcodes_pmpro_orders_csv_extra_columns_group_code';
 	return $columns;
 }
 add_filter( 'pmpro_orders_csv_extra_columns', 'pmpro_groupcodes_pmpro_orders_csv_extra_columns' );
 
-// The actual call back for the column
+/**
+ * Fill the extra colum for the Memberships > Orders > Export to CSV file. Displays the group discount code used.
+ *
+ * @param MemberOrder $order The order object.
+ * @return string The group code.
+ */
 function pmpro_groupcodes_pmpro_orders_csv_extra_columns_group_code( $order ) {
 	global $wpdb;
 	
 	// We could get this from the pmpro_group_discount_codes table, but using the notes saves a DB query.
 	$group_code = pmpro_getMatches( "/{GROUPCODE:([^}]*)}/", $order->notes, true );
 	
-	if( !empty( $group_code ) ) {
+	if ( ! empty( $group_code ) ) {
 		return $group_code;
 	} else {
 		return '';
 	}
 }
 
+/*
+ * Function to add links to the plugin action links.
+ *
+ * @param array $links The links array.
+ * @return array The links array.
+ */
+function pmpro_groupcodes_add_action_links($links) {
+	$new_links = array(
+			'<a href="' . get_admin_url(NULL, '/admin.php?page=pmpro-discountcodes') . '">' . esc_html__( 'Manage Discount Codes', 'pmpro-group-discount-codes' ) . '</a>',
+	);
+	return array_merge( $new_links, $links );
+}
+add_filter( 'plugin_action_links_' . plugin_basename(__FILE__), 'pmpro_groupcodes_add_action_links' );
+
+/*
+ * Function to add links to the plugin row meta.
+ *
+ * @param array $links The links array.
+ * @param string $file The plugin file.
+ * @return array The links array.
+ */
+function pmpro_groupcodes_plugin_row_meta( $links, $file ) {
+	if ( strpos( $file, 'pmpro-group-discount-codes.php') !== false ) {
+		$new_links = array(
+			'<a href="' . esc_url('https://www.paidmembershipspro.com/add-ons/group-discount-codes/' ) . '" title="' . esc_attr( __( 'View Documentation', 'pmpro-group-discount-codes' ) ) . '">' . __( 'Docs', 'pmpro-group-discount-codes' ) . '</a>',
+			'<a href="' . esc_url('https://www.paidmembershipspro.com/support/') . '" title="' . esc_attr( __( 'Visit Customer Support Forum', 'pmpro-group-discount-codes' ) ) . '">' . __( 'Support', 'pmpro-group-discount-codes' ) . '</a>',
+		);
+		$links = array_merge( $links, $new_links );
+	}
+	return $links;
+}
+add_filter( 'plugin_row_meta', 'pmpro_groupcodes_plugin_row_meta', 10, 2 );

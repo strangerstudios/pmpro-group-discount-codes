@@ -11,10 +11,10 @@ Author URI: https://www.paidmembershipspro.com/
 /**
  * Load the textdomain.
  */
-function pmpro_groupcodess_load_textdomain() {
+function pmpro_groupcodes_load_textdomain() {
 	load_plugin_textdomain( 'pmpro-group-discount-codes', false, basename( dirname( __FILE__ ) ) . '/languages' );
 }
-add_action( 'plugins_loaded', 'pmpro_groupcodess_load_textdomain' );
+add_action( 'plugins_loaded', 'pmpro_groupcodes_load_textdomain' );
 
 /*
 	Setup DB Tables

@@ -17,38 +17,39 @@ function pmpro_groupcodes_load_textdomain() {
 add_action( 'plugins_loaded', 'pmpro_groupcodes_load_textdomain' );
 
 /*
-	Setup DB Tables
-*/
-global $wpdb;
-$wpdb->pmpro_group_discount_codes = $wpdb->prefix . "pmpro_group_discount_codes";
+ * Setup DB Tables
+ */
+function pmpro_groupcodes_set_up_db() {
+	global $wpdb;
+	$wpdb->pmpro_group_discount_codes = $wpdb->prefix . "pmpro_group_discount_codes";
 
-if(is_admin())
-{
-	$db_version = get_option('pmpro_groupcodes_db_version', 0);
+	if ( is_admin() ) {
+		$db_version = get_option('pmpro_groupcodes_db_version', 0);
 
-	if(empty($db_version))
-	{
-		//setup DB
-		require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+		if ( empty( $db_version ) ) {
+			// Set up DB.
+			require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 
-		//wp_pmpro_group_discount_codes
-		$sqlQuery = "
-			CREATE TABLE `" . $wpdb->pmpro_group_discount_codes . "` (
-			  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-			  `code` varchar(32) NOT NULL,
-			  `code_parent` bigint(20) unsigned NOT NULL,
-			  `order_id` bigint(20) unsigned NOT NULL,
-			  PRIMARY KEY (`id`),
-			  UNIQUE KEY `code` (`code`),
-			  KEY `code_parent` (`code_parent`),
-			  KEY `order_id` (`order_id`)
-			);
-		";
-		dbDelta($sqlQuery);
+			// Create/update wp_pmpro_group_discount_codes table.
+			$sqlQuery = "
+				CREATE TABLE `" . $wpdb->pmpro_group_discount_codes . "` (
+				`id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+				`code` varchar(32) NOT NULL,
+				`code_parent` bigint(20) unsigned NOT NULL,
+				`order_id` bigint(20) unsigned NOT NULL,
+				PRIMARY KEY (`id`),
+				UNIQUE KEY `code` (`code`),
+				KEY `code_parent` (`code_parent`),
+				KEY `order_id` (`order_id`)
+				);
+			";
+			dbDelta($sqlQuery);
 
-		update_option('pmpro_groupcodes_db_version', ".1");
+			update_option('pmpro_groupcodes_db_version', ".1");
+		}
 	}
 }
+pmpro_groupcodes_set_up_db();
 
 /**
  * Add the group code field to the discount code form.

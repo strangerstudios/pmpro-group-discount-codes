@@ -10,7 +10,7 @@ function pmpro_groupcodes_init() {
 	if ( ! empty( $_REQUEST['discount_code'] ) ) {
 		global $wpdb;
 
-		$discount_code = $_REQUEST['discount_code'];
+		$discount_code = sanitize_text_field( $_REQUEST['discount_code'] );
 
 		// Check if it's a real code first, if so, leave it alone.
 		$is_real_code = $wpdb->get_var( "SELECT id FROM $wpdb->pmpro_discount_codes WHERE code = '" . esc_sql(strtolower(trim($discount_code))) . "' LIMIT 1" );

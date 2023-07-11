@@ -106,7 +106,7 @@ function pmpro_groupcodes_pmpro_save_discount_code( $code_id ) {
 	}
 
 	// Get old codes.
-	$old_group_codes = $wpdb->get_col("SELECT code FROM $wpdb->pmpro_group_discount_codes WHERE code_parent = '" . $code_id . "'");
+	$old_group_codes = $wpdb->get_col("SELECT code FROM $wpdb->pmpro_group_discount_codes WHERE code_parent = '" . (int)$code_id . "'");
 
 	// Get new codes.
 	$group_codes = $_REQUEST['group_codes'];
@@ -195,7 +195,7 @@ function pmpro_groupcodes_pmpro_check_discount_code( $okay, $dbcode, $level_id, 
 		}
 
 		// Okay check parent.
-		$code_parent = $wpdb->get_var( "SELECT code FROM $wpdb->pmpro_discount_codes WHERE id = '" . $group_code->code_parent . "' LIMIT 1" );
+		$code_parent = $wpdb->get_var( "SELECT code FROM $wpdb->pmpro_discount_codes WHERE id = '" . (int)$group_code->code_parent . "' LIMIT 1" );
 		if ( ! empty( $code_parent) ) {
 			return pmpro_checkDiscountCode($code_parent, $level_id);
 		}
@@ -251,7 +251,7 @@ function pmpro_groupcodes_pmpro_discount_code_level( $code_level, $discount_code
 	}
 
 	// Get the parent code.
-	$parent_code = $wpdb->get_row( "SELECT * FROM $wpdb->pmpro_discount_codes WHERE id = '" . $group_code->code_parent . "' LIMIT 1" );
+	$parent_code = $wpdb->get_row( "SELECT * FROM $wpdb->pmpro_discount_codes WHERE id = '" . esc_sql( $group_code->code_parent ) . "' LIMIT 1" );
 	if ( empty( $parent_code ) ) {
 		return $code_level;
 	}
@@ -315,7 +315,7 @@ function pmpro_groupcodes_pmpro_discount_code_used( $discount_code_id, $user_id,
 	) );
 
 	// Update the group discount code uses.
-	$sqlQuery = "UPDATE $wpdb->pmpro_group_discount_codes SET order_id = '" . intval( $order_id ) . "'WHERE code='" . $group_code->code . "' LIMIT 1";
+	$sqlQuery = "UPDATE $wpdb->pmpro_group_discount_codes SET order_id = '" . intval( $order_id ) . "'WHERE code='" . esc_sql( $group_code->code ) . "' LIMIT 1";
 	$wpdb->query( $sqlQuery );
 
 	// Update the order notes (legacy functionality, the custom table is the "source of truth").

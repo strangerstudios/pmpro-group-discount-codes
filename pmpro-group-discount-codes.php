@@ -67,8 +67,14 @@ function pmpro_groupcodes_pmpro_discount_code_after_settings() {
 		$used_codes = array();
 		foreach ( $used_codes_object as $used_code_object ) {
 			if($used_code_object->order_id > 0) {
+				$order = new MemberOrder( $used_code_object->order_id );
+				$user = get_user_by( 'id', $order->user_id );
 				$order_url = esc_url( add_query_arg( array( 'page' => 'pmpro-orders', 'order' =>$used_code_object->order_id ), admin_url('admin.php' ) ) );
-				$used_codes_and_orders[$used_code_object->code] =$order_url;
+				$used_codes_object_class = new stdClass();
+				$used_codes_object_class->url = $order_url;
+				$used_codes_object_class->code = $used_code_object->code;
+				$used_codes_object_class->username = $user->display_name;
+				$used_codes_object_array[$used_code_object->code] = $used_codes_object_class;
 				$used_codes[] = $used_code_object->code;
 
 			}
@@ -98,27 +104,39 @@ function pmpro_groupcodes_pmpro_discount_code_after_settings() {
 	</p>
 	<div class="pmpro-flex-wrapper">
 		<div>
-			<textarea id="group_codes" name="group_codes" cols="15" rows="20"><?php echo esc_attr( implode( "\n", $group_codes ) );?></textarea>
+		<?php //echo esc_attr( implode( "\n", $group_codes ) );?>
+			<textarea id="group_codes" name="group_codes" cols="40" rows="25"></textarea>
 		</div>
+		<?php
+			if ( $code_id > 0 ) {
+		?>
 		<div>
 			<table>
 				<thead>
 					<tr>
-						<th><?php esc_html_e( 'Code', 'pmpro-group-discount-codes' ); ?></th>
+						<th><?php esc_html_e( 'Group Code', 'pmpro-group-discount-codes' ); ?></th>
+						<th><?php esc_html_e( 'Used By	', 'pmpro-group-discount-codes' ); ?></th>
 						<th><?php esc_html_e( 'Delete', 'pmpro-group-discount-codes' ); ?></th>
 					</tr>
 				</thead>
 				<tbody>
 					<?php foreach ( $group_codes as $group_code ) { ?>
 						<tr>
-							<td class="group-code-td" data-code_id="<?php echo esc_attr( $group_code ); ?>"><?php if( in_array($group_code, $used_codes) ) { ?> <a target="_blank" href="<?php echo esc_attr( $used_codes_and_orders[$group_code ] ) ?>"> <?php echo esc_attr( $group_code ); ?></a><?php } else { echo esc_attr( $group_code ); } ?></td>
-							<td class="delete-td"><?php if(! in_array($group_code, $used_codes) ) { ?> <input type="checkbox" class="delete-check" data-code_id_to_delete="<?php echo esc_attr( $group_code ); ?>"><?php } ?></td>
+							<td class="group-code-td"> <?php echo esc_attr( $group_code );  ?></td>
+							<td  <?php if( in_array($group_code, $used_codes) ) { ?>> <a target="_blank" href="<?php echo esc_attr( $used_codes_object_array[$group_code ]->url ) ?>"> <?php echo esc_attr( $used_codes_object_array[$group_code ]->username); ?></a><?php } ?></td>
+							<td class="delete-td">
+								<?php if(! in_array($group_code, $used_codes) ) { ?> 
+									<input type="checkbox" class="delete-check" data-code_id_to_delete="<?php echo esc_attr( $group_code ); ?>"><?php } ?>
+									<input type="hidden" name="delete_codes_set[]"></input>
+							</td>
 						</tr>
-					<?php } ?>
+					<?php } 	?>
 				</tbody>
 			</table>
-			<input type="hidden" id="delete_codes_set" name="delete_codes_set"></input>
 		</div>
+		<?php
+			}
+		?>
 	</div>
 	<hr />
 	<?php
@@ -139,30 +157,39 @@ function pmpro_groupcodes_pmpro_save_discount_code( $code_id ) {
 	}
 
 	// Get old codes.
-	$old_group_codes = $wpdb->get_col("SELECT code FROM $wpdb->pmpro_group_discount_codes WHERE code_parent = '" . (int)$code_id . "'");
+	$old_group_codes = $wpdb->get_col("SELECT code FROM $wpdb->pmpro_group_discount_codes WHERE code_parent = '" . (int) $code_id . "'");
 
 	// Get new codes.
 	$group_codes = $_REQUEST['group_codes'];
-	$group_codes = str_replace( "\r", "", $group_codes );
-	$group_codes = explode( "\n", str_replace( array( ", ", ",", "; ", ";", " " ), "\n", $group_codes ) );
+	if( ! empty($group_codes)) {
+		$group_codes = str_replace( "\r", "", $group_codes );
+		$group_codes = explode( "\n", str_replace( array( ", ", ",", "; ", ";", " " ), "\n", $group_codes ) );
+		$codes_to_add = array_diff( $group_codes, $old_group_codes );
 
-	// Figure out which codes to add and delete.
-	$intersect = array_intersect( $old_group_codes, $group_codes );
-	$codes_to_add = array_diff( $group_codes, $intersect );
-	$codes_to_delete = array_diff( $old_group_codes, $intersect );
-
-	// Add new group codes.
-	foreach( $codes_to_add as $code ) {
-		$sqlQuery = "INSERT IGNORE INTO $wpdb->pmpro_group_discount_codes (id, code, code_parent) VALUES('', '" . esc_sql( trim( $code ) ) . "', '" . $code_id . "')";
-		$wpdb->query( $sqlQuery );
+		// Add new group codes.
+		foreach( $codes_to_add as $code ) {
+			$sqlQuery = "INSERT IGNORE INTO $wpdb->pmpro_group_discount_codes (id, code, code_parent) VALUES('', '" . esc_sql( trim( $code ) ) . "', '" . $code_id . "')";
+			$wpdb->query( $sqlQuery );
+		}
 	}
 
-	// Delete old group codes.
-	foreach( $codes_to_delete as $code ) {
-		$sqlQuery = "DELETE FROM $wpdb->pmpro_group_discount_codes WHERE code = '" . esc_sql( $code ) . "' LIMIT 1";
-		$wpdb->query( $sqlQuery );
+	//Get codes to delete.
+	if($_REQUEST['delete_codes_set']) {
+		$codes_to_delete = array_filter($_REQUEST['delete_codes_set']);
+		// Delete old group codes.
+		foreach( $codes_to_delete as $code ) {
+			//Check if code is used. In case it is, break the loop.
+			$used_code_object = $wpdb->get_results("SELECT code FROM $wpdb->pmpro_group_discount_codes WHERE code = '" . esc_sql( $code ) . "' AND order_id > 0");
+			if( $used_code_object ) {
+				continue;
+			}
+
+			$sqlQuery = "DELETE FROM $wpdb->pmpro_group_discount_codes WHERE code = '" . esc_sql( $code ) . "' LIMIT 1";
+			$wpdb->query( $sqlQuery );
+		}
 	}
 }
+
 add_action( 'pmpro_save_discount_code', 'pmpro_groupcodes_pmpro_save_discount_code' );
 
 /**

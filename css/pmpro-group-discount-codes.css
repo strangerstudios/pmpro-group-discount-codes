@@ -10,19 +10,22 @@ border:none;
 table {
 border-collapse:collapse;
 }
+table thead th {
+  border: 1px solid;
+  padding: 10px;
+}
 table thead tr {
 border:none;
 }
 table tr {
-border-bottom:1px solid #000;
+  border:1px solid #000;
+}
+table tr.deleted-row {
+  background-color: #CCC;
+  opacity: 0.8;
 }
 table tr td {
-padding:10px;
-}
-
-table tr td.delete-td {
-text-align:right;
-}
-table tr td.delete-td button {
-padding:0;
+  padding: 10px;
+  border: 1px solid;
+  text-align: center;
 }

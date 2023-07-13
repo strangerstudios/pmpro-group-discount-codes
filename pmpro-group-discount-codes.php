@@ -16,6 +16,7 @@ function pmpro_groupcodes_load_textdomain() {
 }
 add_action( 'plugins_loaded', 'pmpro_groupcodes_load_textdomain' );
 
+
 /*
  * Setup DB Tables
  */
@@ -60,11 +61,19 @@ function pmpro_groupcodes_pmpro_discount_code_after_settings() {
 	// Get the current group codes.
 	$code_id = intval($_REQUEST['edit']);
 	if ( $code_id > 0 ) {
+		//Do we need to paginate this ?
 		$group_codes = $wpdb->get_col( "SELECT code FROM $wpdb->pmpro_group_discount_codes WHERE code_parent = '" . $code_id . "'" );
-	} else {
-		$group_codes = array();
-	}
+		$used_codes_object = $wpdb->get_results( "SELECT code, order_id FROM $wpdb->pmpro_group_discount_codes WHERE code_parent = '" . $code_id . " AND order_id > 0 '" );
+		$used_codes = array();
+		foreach ( $used_codes_object as $used_code_object ) {
+			if($used_code_object->order_id > 0) {
+				$order_url = esc_url( add_query_arg( array( 'page' => 'pmpro-orders', 'order' =>$used_code_object->order_id ), admin_url('admin.php' ) ) );
+				$used_codes_and_orders[$used_code_object->code] =$order_url;
+				$used_codes[] = $used_code_object->code;
 
+			}
+		}
+	}
 	// Show the field.
 	?>
 	<hr />
@@ -87,7 +96,30 @@ function pmpro_groupcodes_pmpro_discount_code_after_settings() {
 		);
 		?>
 	</p>
-	<textarea id="group_codes" name="group_codes" cols="70" rows="8"><?php echo esc_attr( implode( "\n", $group_codes ) );?></textarea>
+	<div class="pmpro-flex-wrapper">
+		<div>
+			<textarea id="group_codes" name="group_codes" cols="15" rows="20"><?php echo esc_attr( implode( "\n", $group_codes ) );?></textarea>
+		</div>
+		<div>
+			<table>
+				<thead>
+					<tr>
+						<th><?php esc_html_e( 'Code', 'pmpro-group-discount-codes' ); ?></th>
+						<th><?php esc_html_e( 'Delete', 'pmpro-group-discount-codes' ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php foreach ( $group_codes as $group_code ) { ?>
+						<tr>
+							<td class="group-code-td" data-code_id="<?php echo esc_attr( $group_code ); ?>"><?php if( in_array($group_code, $used_codes) ) { ?> <a target="_blank" href="<?php echo esc_attr( $used_codes_and_orders[$group_code ] ) ?>"> <?php echo esc_attr( $group_code ); ?></a><?php } else { echo esc_attr( $group_code ); } ?></td>
+							<td class="delete-td"><?php if(! in_array($group_code, $used_codes) ) { ?> <input type="checkbox" class="delete-check" data-code_id_to_delete="<?php echo esc_attr( $group_code ); ?>"><?php } ?></td>
+						</tr>
+					<?php } ?>
+				</tbody>
+			</table>
+			<input type="hidden" id="delete_codes_set" name="delete_codes_set"></input>
+		</div>
+	</div>
 	<hr />
 	<?php
 }
@@ -466,3 +498,25 @@ function pmpro_groupcodes_plugin_row_meta( $links, $file ) {
 	return $links;
 }
 add_filter( 'plugin_row_meta', 'pmpro_groupcodes_plugin_row_meta', 10, 2 );
+
+/**
+ * Load CSS and JS.
+ * 
+ * @since TBD
+ * 
+ */
+function pmpro_group_admin_assets() {
+	if(file_exists(get_stylesheet_directory() . "/paid-memberships-pro/group-discount-codes/css/pmpro-group-discount-codes.css"))
+		wp_register_style( 'pmpro-group-discount-codes', get_stylesheet_directory_uri()."/paid-memberships-pro/group-discount-codes/css/pmpro-group-discount-codes.css");
+	elseif(file_exists(get_template_directory()."/paid-memberships-pro/group-discount-codes/css/pmpro-group-discount-codes.css"))
+		wp_register_style( 'pmpro-group-discount-codes', get_template_directory_uri()."/paid-memberships-pro/group-discount-codes/css/pmpro-group-discount-codes.css");
+	elseif(function_exists("pmpro_https_filter"))
+		wp_register_style( 'pmpro-group-discount-codes', pmpro_https_filter(plugins_url( 'css/pmpro-group-discount-codes.css', __FILE__ ) ), NULL, "");
+	else
+	wp_register_style( 'pmpro-group-discount-codes', plugins_url( 'css/pmpro-group-discount-codes.css', __FILE__ ) );
+	wp_enqueue_style( 'pmpro-group-discount-codes' );
+	wp_register_script( 'pmpro-group-discount-codes', plugins_url( 'js/admin.js', __FILE__ ), array( 'jquery' ), null, true );
+	wp_enqueue_script( 'pmpro-group-discount-codes' );
+}
+
+add_action( 'admin_enqueue_scripts', 'pmpro_group_admin_assets' );

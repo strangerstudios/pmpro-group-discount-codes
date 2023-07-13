@@ -1,0 +1,28 @@
+.pmpro-flex-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+justify-content: flex-start;
+  gap: 50px;
+}
+.delete-coupon {
+border:none;
+}
+table {
+border-collapse:collapse;
+}
+table thead tr {
+border:none;
+}
+table tr {
+border-bottom:1px solid #000;
+}
+table tr td {
+padding:10px;
+}
+
+table tr td.delete-td {
+text-align:right;
+}
+table tr td.delete-td button {
+padding:0;
+}

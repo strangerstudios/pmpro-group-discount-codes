@@ -62,7 +62,7 @@ function pmpro_groupcodes_pmpro_discount_code_after_settings() {
 	$code_id = intval($_REQUEST['edit']);
 	if ( $code_id > 0 ) {
 		//Do we need to paginate this ?
-		$group_codes = $wpdb->get_col( "SELECT code FROM $wpdb->pmpro_group_discount_codes WHERE code_parent = '" . $code_id . "'" );
+		$group_codes = $wpdb->get_col( "SELECT code FROM $wpdb->pmpro_group_discount_codes WHERE code_parent = '" . $code_id . "' ORDER BY  code ASC" );
 		$used_codes_object = $wpdb->get_results( "SELECT code, order_id FROM $wpdb->pmpro_group_discount_codes WHERE code_parent = '" . $code_id . " AND order_id > 0 '" );
 		$used_codes = array();
 		foreach ( $used_codes_object as $used_code_object ) {
@@ -105,12 +105,12 @@ function pmpro_groupcodes_pmpro_discount_code_after_settings() {
 	<div class="pmpro-flex-wrapper">
 		<div>
 		<?php //echo esc_attr( implode( "\n", $group_codes ) );?>
-			<textarea id="group_codes" name="group_codes" cols="40" rows="25"></textarea>
+			<textarea id="group_codes" name="group_codes" cols="40" rows="25" placeholder="<?php esc_html_e('Add New Group Codes', 'pmpro-group-discount-codes')?>"></textarea>
 		</div>
 		<?php
 			if ( $code_id > 0 ) {
 		?>
-		<div>
+		<div class="table-wrapper">
 			<table>
 				<thead>
 					<tr>

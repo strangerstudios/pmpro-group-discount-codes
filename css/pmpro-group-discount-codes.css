@@ -1,13 +1,15 @@
 .pmpro-flex-wrapper {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-start;
   gap: 50px;
+  padding-top: 30px;
 }
 
 .pmpro-flex-wrapper .table-wrapper {
     height: 500px;
     overflow-y: scroll;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
 .delete-coupon {
@@ -34,4 +36,22 @@ border:none;
   padding: 10px;
   border: 1px solid;
   text-align: center;
+}
+
+.pmpro-flex-wrapper .table-wrapper div.filters {
+  display: flex;
+  gap: 20px;
+}
+.pmpro-flex-wrapper .table-wrapper span.filters-label {
+  display: inline-flex;
+  align-items: end;
+  gap: 5px;
+}
+.pmpro-flex-wrapper .table-wrapper span.filters {
+  display: flex;
+  gap: 20px;
+}
+
+.pmpro-flex-wrapper .table-wrapper  .radio-wrapper input[type="radio"] {
+  margin:0;
 }

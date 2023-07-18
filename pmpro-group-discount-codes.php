@@ -104,30 +104,51 @@ function pmpro_groupcodes_pmpro_discount_code_after_settings() {
 	</p>
 	<div class="pmpro-flex-wrapper">
 		<div>
-		<?php //echo esc_attr( implode( "\n", $group_codes ) );?>
 			<textarea id="group_codes" name="group_codes" cols="40" rows="25" placeholder="<?php esc_html_e('Add New Group Codes', 'pmpro-group-discount-codes')?>"></textarea>
 		</div>
 		<?php
 			if ( $code_id > 0 ) {
 		?>
 		<div class="table-wrapper">
+			<div class="filters">
+				<span class="filter-label"><?php esc_html_e("Filter:", 'pmpro-group-discount-codes' ); ?></span>
+				<span class="filters">
+					<div class="radio-wrapper">
+						<input type="radio" id="all" value="all" name="filter" checked></input>
+						<label for="all"><?php esc_html_e("All", 'pmpro-group-discount-codes' ); ?></label>
+					</div>
+					<div class="radio-wrapper">
+						<input type="radio" id="used" value="used" name="filter"></input>
+						<label for="used"><?php esc_html_e("Used", 'pmpro-group-discount-codes' ); ?></label>
+					</div>
+					<div class="radio-wrapper">
+						<input type="radio" id="unused" value="unused" name="filter"></input>
+						<label for="unused"><?php esc_html_e("Unused", 'pmpro-group-discount-codes' ); ?></label>
+					</div>
+				</span>
+			</div>
+			<div class="search">
+				<span class="search"><?php esc_html_e("Search by user or code:", 'pmpro-group-discount-codes' ); ?></span>
+				<input type="text" id="code-search" placeholder="<?php esc_html_e('Search', 'pmpro-group-discount-codes')?>"/>
+			</div>
 			<table>
 				<thead>
 					<tr>
 						<th><?php esc_html_e( 'Group Code', 'pmpro-group-discount-codes' ); ?></th>
-						<th><?php esc_html_e( 'Used By	', 'pmpro-group-discount-codes' ); ?></th>
+						<th><?php esc_html_e( 'Used By', 'pmpro-group-discount-codes' ); ?></th>
 						<th><?php esc_html_e( 'Delete', 'pmpro-group-discount-codes' ); ?></th>
 					</tr>
 				</thead>
 				<tbody>
 					<?php foreach ( $group_codes as $group_code ) { ?>
-						<tr>
+						<tr data-code_id="<?php echo esc_attr( $group_code ); ?>" >
 							<td class="group-code-td"> <?php echo esc_attr( $group_code );  ?></td>
 							<td  <?php if( in_array($group_code, $used_codes) ) { ?>> <a target="_blank" href="<?php echo esc_attr( $used_codes_object_array[$group_code ]->url ) ?>"> <?php echo esc_attr( $used_codes_object_array[$group_code ]->username); ?></a><?php } ?></td>
 							<td class="delete-td">
 								<?php if(! in_array($group_code, $used_codes) ) { ?> 
-									<input type="checkbox" class="delete-check" data-code_id_to_delete="<?php echo esc_attr( $group_code ); ?>"><?php } ?>
+									<input type="checkbox" class="delete-check" data-code_id_to_delete="<?php echo esc_attr( $group_code ); ?>">
 									<input type="hidden" name="delete_codes_set[]"></input>
+								<?php } ?>
 							</td>
 						</tr>
 					<?php } 	?>

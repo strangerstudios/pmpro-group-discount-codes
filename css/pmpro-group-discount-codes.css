@@ -2,6 +2,7 @@
   display: flex;
   gap: 50px;
   padding-top: 30px;
+  flex-wrap: wrap;
 }
 
 .pmpro-flex-wrapper .table-wrapper {
@@ -54,4 +55,11 @@ border:none;
 
 .pmpro-flex-wrapper .table-wrapper  .radio-wrapper input[type="radio"] {
   margin:0;
+}
+
+@media screen and (max-width: 767px) {
+  .pmpro-flex-wrapper .table-wrapper, div.text-area-wrapper, div.text-area-wrapper textarea {
+    width: 100%;
+  }
+
 }

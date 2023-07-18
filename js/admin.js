@@ -12,6 +12,7 @@ jQuery(document).ready(function($) {
      * toggle the filters.
      */
     $('.table-wrapper .filters input').on('click', (evt) => {
+        $('#code-search').val('');
         const $this = $(evt.target);
         const $all = $('.table-wrapper table tr');
         const $used = $('.table-wrapper table tr td.delete-td:not(:has(*)').closest('tr');
@@ -37,7 +38,7 @@ jQuery(document).ready(function($) {
     $('#code-search').on('keyup', evt => {
         $input = $(evt.target);
         const searchText = $input.val().toLowerCase();
-        $('.table-wrapper table tbody tr').filter((index, element) => {
+        $('.table-wrapper table tbody tr:visible').filter((index, element) => {
             $(element).toggle($(element).text().toLowerCase().includes(searchText));
         });
     });

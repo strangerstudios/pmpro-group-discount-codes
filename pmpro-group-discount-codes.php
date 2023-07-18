@@ -103,7 +103,7 @@ function pmpro_groupcodes_pmpro_discount_code_after_settings() {
 		?>
 	</p>
 	<div class="pmpro-flex-wrapper">
-		<div>
+		<div class="text-area-wrapper">
 			<textarea id="group_codes" name="group_codes" cols="40" rows="25" placeholder="<?php esc_html_e('Add New Group Codes', 'pmpro-group-discount-codes')?>"></textarea>
 		</div>
 		<?php

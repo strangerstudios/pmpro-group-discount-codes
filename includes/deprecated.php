@@ -3,10 +3,10 @@
 /**
  * Swap real code for group code.
  *
- * @deprecated TBD
+ * @deprecated 0.4
  */
 function pmpro_groupcodes_init() {
-	_deprecated_function( __FUNCTION__, 'TBD' );
+	_deprecated_function( __FUNCTION__, '0.4' );
 	if ( ! empty( $_REQUEST['discount_code'] ) ) {
 		global $wpdb;
 
@@ -44,10 +44,10 @@ function pmpro_groupcodes_init() {
 /**
  * Hide group codes from discount code field on checkout page.
  *
- * @deprecated TBD
+ * @deprecated 0.4
  */
 function pmpro_groupcodes_template_redirect() {
-	_deprecated_function( __FUNCTION__, 'TBD' );
+	_deprecated_function( __FUNCTION__, '0.4' );
 
 	global $discount_code, $group_discount_code;
 	if ( ! empty( $group_discount_code ) ) {
@@ -59,13 +59,13 @@ function pmpro_groupcodes_template_redirect() {
 /**
  * Add note RE group code and save order_id in group code table.
  *
- * @deprecated TBD
+ * @deprecated 0.4
  *
  * @param MemberOrder $order The order object.
  * @return MemberOrder The order object.
  */
 function pmpro_groupcodes_pmpro_added_order( $order ) {
-	_deprecated_function( __FUNCTION__, 'TBD' );
+	_deprecated_function( __FUNCTION__, '0.4' );
 	global $group_discount_code;
 
 	if ( ! empty( $group_discount_code ) ) {

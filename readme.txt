@@ -1,9 +1,9 @@
 == Paid Memberships Pro - Group Discount Codes Add On ==
 Contributors: strangerstudios
 Tags: pmpro, paid memberships pro, discount codes, group codes, group discount
-Requires at least: 3.6
-Tested up to: 4.3.1
-Stable tag: .3.1
+Requires at least: 5.0
+Tested up to: 6.4
+Stable tag: 0.4
 
 Adds features to PMPro to better manage grouped discount codes or large numbers of discount codes.
 
@@ -30,6 +30,10 @@ The "parent" code should be kept private with unlimited uses.
 Please post it in the issues section of GitHub and we'll fix it as soon as we can. Thanks for helping. https://github.com/strangerstudios/pmpro-group-discount-codes/issues
 
 == Changelog ==
+= 0.4 - 2023-11-08 =
+* SECURITY: Improved sanitization of code logic to improve security. (@dparker1005)
+* ENHANCEMENT: Improved support and backwards compatibility for future and past versions of Paid Memberships Pro. (@dparker1005)
+* BUG FIX: Fixed an issue where token orders would count usage against the group code. Only successful orders are now counting the discount code uses. (@dparker1005)
 
 = .3.2 =
 * ENHANCEMENT: Added Group Code Uses column to Memberships > Discount Codes to show a sum of child codes that have been used.

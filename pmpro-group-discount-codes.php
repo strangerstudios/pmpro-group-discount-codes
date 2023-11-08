@@ -6,6 +6,8 @@ Description: Adds features to PMPro to better manage grouped discount codes or l
 Version: 0.4
 Author: Paid Memberships Pro
 Author URI: https://www.paidmembershipspro.com/
+Text Domain: pmpro-group-discount-codes
+Domain Path: /languages
 */
 
 /**

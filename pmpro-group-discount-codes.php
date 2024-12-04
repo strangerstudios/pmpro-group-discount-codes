@@ -276,12 +276,17 @@ add_filter( 'pmpro_discount_code_level', 'pmpro_groupcodes_pmpro_discount_code_l
  *
  * @since 0.4
  *
- * @param int $discount_code_id The discount code ID used.
  * @param int $user_id The user ID.
- * @param int $order_id The order ID.
+ * @param MemberOrder $order The order object.
  */
-function pmpro_groupcodes_pmpro_discount_code_used( $discount_code_id, $user_id, $order_id ) {
+function pmpro_groupcodes_pmpro_discount_code_used( $user_id, $order ) {
 	global $wpdb;
+
+	// Get the order ID.
+	$order_id = $order->id;
+
+	// Get the discount code ID.
+	$discount_code_id = $order->discount_code_id;
 
 	// If $discount_code_id is not empty, then a legitemate discount code was used. Bail.
 	if ( ! empty( $discount_code_id ) ) {
@@ -326,7 +331,7 @@ function pmpro_groupcodes_pmpro_discount_code_used( $discount_code_id, $user_id,
 	$order->notes .= "\n---\n{GROUPCODE:" . $group_code->code . "}\n---\n";
 	$order->saveOrder();
 }
-add_action( 'pmpro_discount_code_used', 'pmpro_groupcodes_pmpro_discount_code_used', 10, 3 );
+add_action( 'pmpro_after_checkout', 'pmpro_groupcodes_pmpro_discount_code_used', 10, 2 );
 
 /**
  * Filter discount code when showing invoice.

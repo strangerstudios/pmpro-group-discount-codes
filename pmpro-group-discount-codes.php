@@ -275,13 +275,26 @@ add_filter( 'pmpro_discount_code_level', 'pmpro_groupcodes_pmpro_discount_code_l
  * When a group code is used, update the discount code uses, group discount code uses, and order notes.
  *
  * @since 0.4
+ * @since TBD Now hooking into pmpro_added_order instead of pmpro_discount_code_used.
  *
- * @param int $discount_code_id The discount code ID used.
- * @param int $user_id The user ID.
- * @param int $order_id The order ID.
+ * @param MemberOrder $order The order object.
  */
-function pmpro_groupcodes_pmpro_discount_code_used( $discount_code_id, $user_id, $order_id ) {
+function pmpro_groupcodes_pmpro_discount_code_used( $order ) {
 	global $wpdb;
+
+	// Get the membership level object associated with the order.
+	$level = $order->getMembershipLevelAtCheckout( true );
+
+	// Bail if no discount code was used at checkout
+	if ( empty( $level->discount_code ) ) {
+		return;
+	}
+
+	// Get the discount code object for the discount code used at checkout
+	$discount_code = new PMPro_Discount_Code( $level->discount_code );
+
+	// Get the discount code id from the discount code object
+	$discount_code_id = $discount_code->id;
 
 	// If $discount_code_id is not empty, then a legitemate discount code was used. Bail.
 	if ( ! empty( $discount_code_id ) ) {
@@ -289,22 +302,12 @@ function pmpro_groupcodes_pmpro_discount_code_used( $discount_code_id, $user_id,
 	}
 
 	// Clean up any discount code uses that were already created for this order.
-	$wpdb->query( "DELETE FROM $wpdb->pmpro_discount_codes_uses WHERE order_id = '" . intval( $order_id ) . "'" );
+	$wpdb->query( "DELETE FROM $wpdb->pmpro_discount_codes_uses WHERE order_id = '" . $order->id . "'" );
 
-	// Get the group code that was used. If there wasn't a group code used, bail.
-	$group_code = false;
-	if ( ! empty( $_REQUEST['pmpro_discount_code'] ) ) {
-		$group_code = pmpro_groupcodes_getGroupCode( $_REQUEST['pmpro_discount_code'] );
-	}
-	if ( empty( $group_code ) && ! empty( $_REQUEST['discount_code'] ) ) {
-		$group_code = pmpro_groupcodes_getGroupCode( $_REQUEST['discount_code'] );
-	}
-	if ( empty( $group_code ) ) {
-		return;
-	}
+	// If the discount code used does not have a parent code, bail.
+	$group_code = pmpro_groupcodes_getGroupCode( $level->discount_code );
 
-	// Check that there is a parent code.
-	if ( empty( $group_code->code_parent ) ) {
+	if ( empty( $group_code ) || empty( $group_code->code_parent ) ) {
 		return;
 	}
 
@@ -312,21 +315,20 @@ function pmpro_groupcodes_pmpro_discount_code_used( $discount_code_id, $user_id,
 	$wpdb->query( $wpdb->prepare(
 		"INSERT INTO $wpdb->pmpro_discount_codes_uses (code_id, user_id, order_id, timestamp) VALUES(%d, %d, %d, %s)",
 		$group_code->code_parent,
-		$user_id,
-		$order_id,
+		$order->user_id,
+		$order->id,
 		current_time( "mysql" )
 	) );
 
 	// Update the group discount code uses.
-	$sqlQuery = "UPDATE $wpdb->pmpro_group_discount_codes SET order_id = '" . intval( $order_id ) . "'WHERE code='" . esc_sql( $group_code->code ) . "' LIMIT 1";
+	$sqlQuery = "UPDATE $wpdb->pmpro_group_discount_codes SET order_id = '" . $order->id . "'WHERE code='" . esc_sql( $group_code->code ) . "' LIMIT 1";
 	$wpdb->query( $sqlQuery );
 
 	// Update the order notes (legacy functionality, the custom table is the "source of truth").
-	$order = new MemberOrder( $order_id );
 	$order->notes .= "\n---\n{GROUPCODE:" . $group_code->code . "}\n---\n";
 	$order->saveOrder();
 }
-add_action( 'pmpro_discount_code_used', 'pmpro_groupcodes_pmpro_discount_code_used', 10, 3 );
+add_action( 'pmpro_added_order', 'pmpro_groupcodes_pmpro_discount_code_used' );
 
 /**
  * Filter discount code when showing invoice.

@@ -302,7 +302,7 @@ function pmpro_groupcodes_pmpro_discount_code_used( $order ) {
 	}
 
 	// Clean up any discount code uses that were already created for this order.
-	$wpdb->query( "DELETE FROM $wpdb->pmpro_discount_codes_uses WHERE order_id = '" . $order->id . "'" );
+	$wpdb->query( "DELETE FROM $wpdb->pmpro_discount_codes_uses WHERE order_id = '" . intval( $order->id ) . "'" );
 
 	// If the discount code used does not have a parent code, bail.
 	$group_code = pmpro_groupcodes_getGroupCode( $level->discount_code );
@@ -321,7 +321,7 @@ function pmpro_groupcodes_pmpro_discount_code_used( $order ) {
 	) );
 
 	// Update the group discount code uses.
-	$sqlQuery = "UPDATE $wpdb->pmpro_group_discount_codes SET order_id = '" . $order->id . "'WHERE code='" . esc_sql( $group_code->code ) . "' LIMIT 1";
+	$sqlQuery = "UPDATE $wpdb->pmpro_group_discount_codes SET order_id = '" . intval( $order->id ) . "'WHERE code='" . esc_sql( $group_code->code ) . "' LIMIT 1";
 	$wpdb->query( $sqlQuery );
 
 	// Update the order notes (legacy functionality, the custom table is the "source of truth").

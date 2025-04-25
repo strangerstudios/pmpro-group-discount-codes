@@ -1,8 +1,8 @@
 ### All Submissions:
 
-* [ ] Have you followed the [Contributing guidelines](https://github.com/strangerstudios/pmpro-courses/blob/dev/.github/CONTRIBUTING.md)?
+* [ ] Have you followed the [Contributing guideline](CONTRIBUTING.MD)?
 * [ ] Does your code follow the [WordPress' coding standards](https://make.wordpress.org/core/handbook/best-practices/coding-standards/)?
-* [ ] Have you checked to ensure there aren't other open [Pull Requests](https://github.com/strangerstudios/pmpro-courses/pulls/) for the same update/change?
+* [ ] Have you checked to ensure there aren't other open [Pull Requests](../../pulls) for the same update/change?
 
 <!-- Mark completed items with an [x] -->
 
@@ -12,7 +12,7 @@
 
 <!-- Describe the changes made to this Pull Request and the reason for such changes. -->
 
-Resolves XXX.
+Closes Issue: XXX.
 
 ### How to test the changes in this Pull Request:
 
@@ -28,5 +28,4 @@ Resolves XXX.
 <!-- Mark completed items with an [x] -->
 
 ### Changelog entry
-
 > Enter a summary of all changes on this Pull Request. This will appear in the changelog if accepted.

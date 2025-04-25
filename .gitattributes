@@ -2,8 +2,4 @@
 pmpro-group-discount-codes-banner.jpg export-ignore
 .gitattributes export-ignore
 .github export-ignore
-.wordpress-org export-ignore
 README.md export-ignore
-webpack.config.js export-ignore
-package.json export-ignore
-blocks/src export-ignore

@@ -1,0 +1,72 @@
+# Copyright (C) 2023 Paid Memberships Pro
+# This file is distributed under the same license as the Paid Memberships Pro - Group Discount Codes Add On plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: Paid Memberships Pro - Group Discount Codes Add On 0.4\n"
+"Report-Msgid-Bugs-To: info@paidmembershipspro.com\n"
+"Last-Translator: Paid Memberships Pro <info@paidmembershipspro.com>\n"
+"Language-Team: Paid Memberships Pro <info@paidmembershipspro.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2023-11-08T10:11:14+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.9.0\n"
+"X-Domain: pmpro-group-discount-codes\n"
+
+#. Plugin Name of the plugin
+msgid "Paid Memberships Pro - Group Discount Codes Add On"
+msgstr ""
+
+#. Plugin URI of the plugin
+msgid "https://www.paidmembershipspro.com/add-ons/group-discount-codes/"
+msgstr ""
+
+#. Description of the plugin
+msgid "Adds features to PMPro to better manage grouped discount codes or large numbers of discount codes."
+msgstr ""
+
+#. Author of the plugin
+msgid "Paid Memberships Pro"
+msgstr ""
+
+#. Author URI of the plugin
+msgid "https://www.paidmembershipspro.com/"
+msgstr ""
+
+#: pmpro-group-discount-codes.php:73
+msgid "Group Codes"
+msgstr ""
+
+#. translators: %s is a link to a random string generator.
+#: pmpro-group-discount-codes.php:79
+msgid "Enter additional codes that will use the same settings, one code per line. Codes may only contain letters and numbers (use a <a href=\"%s\" target=\"_blank\">random string generator</a> or a spreadsheet program to create bulk codes). <strong>Keep the main code secret, and leave the uses of the main code blank.</strong> Each code below may only be used once."
+msgstr ""
+
+#: pmpro-group-discount-codes.php:197
+msgid "This code has already been used."
+msgstr ""
+
+#: pmpro-group-discount-codes.php:377
+msgid "Group Code Uses"
+msgstr ""
+
+#: pmpro-group-discount-codes.php:447
+msgid "Manage Discount Codes"
+msgstr ""
+
+#: pmpro-group-discount-codes.php:463
+msgid "View Documentation"
+msgstr ""
+
+#: pmpro-group-discount-codes.php:463
+msgid "Docs"
+msgstr ""
+
+#: pmpro-group-discount-codes.php:464
+msgid "Visit Customer Support Forum"
+msgstr ""
+
+#: pmpro-group-discount-codes.php:464
+msgid "Support"
+msgstr ""

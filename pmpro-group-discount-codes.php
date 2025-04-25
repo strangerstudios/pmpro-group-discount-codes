@@ -273,11 +273,11 @@ add_filter( 'pmpro_discount_code_level', 'pmpro_groupcodes_pmpro_discount_code_l
 
 /**
  * When a group code is used, update the discount code uses, group discount code uses, and order notes.
- *
+ * Note: Moved from pmpro_discount_code_used to pmpro_added_order in version TBD.
+ * 
  * @since 0.4
- * @since TBD Now hooking into pmpro_added_order instead of pmpro_discount_code_used.
  *
- * @param MemberOrder $order The order object.
+ * @param MemberOrder $order The Paid Memberships Pro order object.
  */
 function pmpro_groupcodes_pmpro_discount_code_used( $order ) {
 	global $wpdb;

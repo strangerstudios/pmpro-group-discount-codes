@@ -70,7 +70,7 @@ function pmpro_groupcodes_pmpro_discount_code_after_settings() {
 	// Show the field.
 	?>
 	<hr />
-	<h3><?php esc_html_e( 'Group Codes', 'pmpro-group-discount-codes' ); ?></h3>
+	<h2><?php esc_html_e( 'Group Codes', 'pmpro-group-discount-codes' ); ?></h2>
 	<p>
 		<?php
 		echo wp_kses(
@@ -89,7 +89,7 @@ function pmpro_groupcodes_pmpro_discount_code_after_settings() {
 		);
 		?>
 		<?php
-		$group_codes_link = '<a title="' . esc_attr__( 'Group Discount Codes Add On', 'pmpro-group-discount-codes' ) . '" target="_blank" rel="nofollow noopener" href="https://www.paidmembershipspro.com/add-ons/group-discount-codes/?utm_source=plugin&utm_medium=pmpro-group-discount-codes&utm_campaign=add-ons&utm_content=&utm_term=">' . esc_html__( 'Group Discount Codes', 'pmpro-group-discount-codes' ) . '</a>';
+		$group_codes_link = '<a title="' . esc_attr__( 'Group Discount Codes Add On Documentation', 'pmpro-group-discount-codes' ) . '" target="_blank" rel="nofollow noopener" href="https://www.paidmembershipspro.com/add-ons/group-discount-codes/?utm_source=plugin&utm_medium=pmpro-group-discount-codes&utm_campaign=add-ons&utm_content=&utm_term=">' . esc_html__( 'Group Discount Codes', 'pmpro-group-discount-codes' ) . '</a>';
 		printf( esc_html__( 'Learn more about %s.', 'pmpro-group-discount-codes' ), $group_codes_link ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		?>
 	</p>

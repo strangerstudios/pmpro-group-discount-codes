@@ -3,7 +3,7 @@
 Plugin Name: Paid Memberships Pro - Group Discount Codes Add On
 Plugin URI: https://www.paidmembershipspro.com/add-ons/group-discount-codes/
 Description: Adds features to PMPro to better manage grouped discount codes or large numbers of discount codes.
-Version: 0.5
+Version: 0.5.1
 Author: Paid Memberships Pro
 Author URI: https://www.paidmembershipspro.com/
 Text Domain: pmpro-group-discount-codes

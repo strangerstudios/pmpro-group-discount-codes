@@ -2,8 +2,8 @@
 Contributors: strangerstudios
 Tags: pmpro, paid memberships pro, discount codes, group codes, group discount
 Requires at least: 5.0
-Tested up to: 6.8
-Stable tag: 0.5
+Tested up to: 6.9
+Stable tag: 0.5.1
 
 Adds features to PMPro to better manage grouped discount codes or large numbers of discount codes.
 
@@ -30,6 +30,9 @@ The "parent" code should be kept private with unlimited uses.
 Please post it in the issues section of GitHub and we'll fix it as soon as we can. Thanks for helping. https://github.com/strangerstudios/pmpro-group-discount-codes/issues
 
 == Changelog ==
+= 0.5.1 - 2026-05-04 =
+* ENHANCEMENT: Added a "Learn more" documentation link in the Edit Discount Code admin screen and adjusted the "Group Codes" heading level to match other PMPro Add Ons. #21 (@kimcoleman)
+
 = 0.5 - 2025-04-25 =
 * BUG FIX: Fixes issue where a group discount code could be used more than once. (@dwanjuki)
 

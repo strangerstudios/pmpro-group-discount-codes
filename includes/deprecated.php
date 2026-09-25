@@ -1,5 +1,11 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Queries run against PMPro custom tables; no WP API or cache layer exists for them.
+
 /**
  * Swap real code for group code.
  *
@@ -7,13 +13,13 @@
  */
 function pmpro_groupcodes_init() {
 	_deprecated_function( __FUNCTION__, '0.4' );
-	if ( ! empty( $_REQUEST['discount_code'] ) ) {
+	if ( ! empty( $_REQUEST['discount_code'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Deprecated, unhooked read-only lookup of the checkout discount code.
 		global $wpdb;
 
-		$discount_code = sanitize_text_field( $_REQUEST['discount_code'] );
+		$discount_code = sanitize_text_field( wp_unslash( $_REQUEST['discount_code'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Deprecated, unhooked read-only lookup of the checkout discount code.
 
 		// Check if it's a real code first, if so, leave it alone.
-		$is_real_code = $wpdb->get_var( "SELECT id FROM $wpdb->pmpro_discount_codes WHERE code = '" . esc_sql(strtolower(trim($discount_code))) . "' LIMIT 1" );
+		$is_real_code = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $wpdb->pmpro_discount_codes WHERE code = %s LIMIT 1", strtolower( trim( $discount_code ) ) ) );
 		if ( $is_real_code ) {
 			return;
 		}
@@ -27,7 +33,7 @@ function pmpro_groupcodes_init() {
 			}
 
 			// Swap with the parent.
-			$code_parent = $wpdb->get_var( "SELECT code FROM $wpdb->pmpro_discount_codes WHERE id = '" . $group_code->code_parent . "' LIMIT 1" );
+			$code_parent = $wpdb->get_var( $wpdb->prepare( "SELECT code FROM $wpdb->pmpro_discount_codes WHERE id = %d LIMIT 1", $group_code->code_parent ) );
 			if ( ! empty( $code_parent ) ) {
 				// Swap in request.
 				$_REQUEST['discount_code'] = $code_parent;
@@ -73,12 +79,10 @@ function pmpro_groupcodes_pmpro_added_order( $order ) {
 
 		// Add group code to note (legacy functionality, the custom table is the "source of truth").
 		$order->notes .= "\n---\n{GROUPCODE:" . $group_discount_code . "}\n---\n";
-		$sqlQuery = "UPDATE $wpdb->pmpro_membership_orders SET notes = '" . esc_sql( $order->notes ) . "' WHERE id = '" . intval( $order->id ) . "' LIMIT 1";
-		$wpdb->query( $sqlQuery );
+		$wpdb->query( $wpdb->prepare( "UPDATE $wpdb->pmpro_membership_orders SET notes = %s WHERE id = %d LIMIT 1", $order->notes, $order->id ) );
 
 		// Save order id in group code table.
-		$sqlQuery = "UPDATE $wpdb->pmpro_group_discount_codes SET order_id = '" . intval( $order->id ) . "'WHERE code='" . $group_discount_code . "' LIMIT 1";
-		$wpdb->query( $sqlQuery );
+		$wpdb->query( $wpdb->prepare( "UPDATE $wpdb->pmpro_group_discount_codes SET order_id = %d WHERE code = %s LIMIT 1", $order->id, $group_discount_code ) );
 	}
 
 	return $order;

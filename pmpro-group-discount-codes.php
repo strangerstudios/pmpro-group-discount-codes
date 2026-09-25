@@ -10,6 +10,12 @@ Text Domain: pmpro-group-discount-codes
 Domain Path: /languages
 */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Queries run against PMPro custom tables; no WP API or cache layer exists for them.
+
 /**
  * Load the textdomain.
  */
@@ -60,9 +66,9 @@ function pmpro_groupcodes_pmpro_discount_code_after_settings() {
 	global $wpdb;
 
 	// Get the current group codes.
-	$code_id = intval($_REQUEST['edit']);
+	$code_id = isset( $_REQUEST['edit'] ) ? intval( $_REQUEST['edit'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only; selects which code's group codes to display on the capability-gated discount code edit page.
 	if ( $code_id > 0 ) {
-		$group_codes = $wpdb->get_col( "SELECT code FROM $wpdb->pmpro_group_discount_codes WHERE code_parent = '" . $code_id . "'" );
+		$group_codes = $wpdb->get_col( $wpdb->prepare( "SELECT code FROM $wpdb->pmpro_group_discount_codes WHERE code_parent = %d", $code_id ) );
 	} else {
 		$group_codes = array();
 	}
@@ -112,11 +118,16 @@ function pmpro_groupcodes_pmpro_save_discount_code( $code_id ) {
 		return;
 	}
 
+	// Make sure the group codes field was submitted.
+	if ( ! isset( $_REQUEST['group_codes'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Nonce and capability verified by core adminpages/discountcodes.php (check_admin_referer 'save') before pmpro_save_discount_code fires.
+		return;
+	}
+
 	// Get old codes.
-	$old_group_codes = $wpdb->get_col("SELECT code FROM $wpdb->pmpro_group_discount_codes WHERE code_parent = '" . (int)$code_id . "'");
+	$old_group_codes = $wpdb->get_col( $wpdb->prepare( "SELECT code FROM $wpdb->pmpro_group_discount_codes WHERE code_parent = %d", $code_id ) );
 
 	// Get new codes.
-	$group_codes = $_REQUEST['group_codes'];
+	$group_codes = sanitize_textarea_field( wp_unslash( $_REQUEST['group_codes'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Nonce and capability verified by core adminpages/discountcodes.php (check_admin_referer 'save') before pmpro_save_discount_code fires.
 	$group_codes = str_replace( "\r", "", $group_codes );
 	$group_codes = explode( "\n", str_replace( array( ", ", ",", "; ", ";", " " ), "\n", $group_codes ) );
 
@@ -127,14 +138,12 @@ function pmpro_groupcodes_pmpro_save_discount_code( $code_id ) {
 
 	// Add new group codes.
 	foreach( $codes_to_add as $code ) {
-		$sqlQuery = "INSERT IGNORE INTO $wpdb->pmpro_group_discount_codes (id, code, code_parent) VALUES('', '" . esc_sql( trim( $code ) ) . "', '" . $code_id . "')";
-		$wpdb->query( $sqlQuery );
+		$wpdb->query( $wpdb->prepare( "INSERT IGNORE INTO $wpdb->pmpro_group_discount_codes (id, code, code_parent) VALUES('', %s, %d)", trim( $code ), $code_id ) );
 	}
 
 	// Delete old group codes.
 	foreach( $codes_to_delete as $code ) {
-		$sqlQuery = "DELETE FROM $wpdb->pmpro_group_discount_codes WHERE code = '" . esc_sql( $code ) . "' LIMIT 1";
-		$wpdb->query( $sqlQuery );
+		$wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->pmpro_group_discount_codes WHERE code = %s LIMIT 1", $code ) );
 	}
 }
 add_action( 'pmpro_save_discount_code', 'pmpro_groupcodes_pmpro_save_discount_code' );
@@ -147,8 +156,7 @@ add_action( 'pmpro_save_discount_code', 'pmpro_groupcodes_pmpro_save_discount_co
 function pmpro_groupcodes_pmpro_delete_discount_code( $code_id ) {
 	global $wpdb;
 
-	$sqlQuery = "DELETE FROM $wpdb->pmpro_group_discount_codes WHERE code_parent = '" . intval( $code_id ) . "'";
-	$wpdb->query($sqlQuery);
+	$wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->pmpro_group_discount_codes WHERE code_parent = %d", $code_id ) );
 }
 add_action( 'pmpro_delete_discount_code', 'pmpro_groupcodes_pmpro_delete_discount_code' );
 
@@ -160,7 +168,7 @@ add_action( 'pmpro_delete_discount_code', 'pmpro_groupcodes_pmpro_delete_discoun
  */
 function pmpro_groupcodes_getGroupCode( $group_code ) {
 	global $wpdb;
-	return $wpdb->get_row( "SELECT * FROM $wpdb->pmpro_group_discount_codes WHERE code = '" . esc_sql( strtolower( trim( $group_code ) ) ) . "' LIMIT 1" );
+	return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $wpdb->pmpro_group_discount_codes WHERE code = %s LIMIT 1", strtolower( trim( $group_code ) ) ) );
 }
 
 /**
@@ -173,7 +181,7 @@ function pmpro_groupcodes_getGroupCode( $group_code ) {
  */
 function pmpro_groupcodes_get_group_code_for_order( $order_id ) {
 	global $wpdb;
-	return $wpdb->get_row( "SELECT * FROM $wpdb->pmpro_group_discount_codes WHERE order_id = '" . intval( $order_id ) . "' LIMIT 1" );
+	return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $wpdb->pmpro_group_discount_codes WHERE order_id = %d LIMIT 1", $order_id ) );
 }
 
 /*
@@ -202,7 +210,7 @@ function pmpro_groupcodes_pmpro_check_discount_code( $okay, $dbcode, $level_id, 
 		}
 
 		// Okay check parent.
-		$code_parent = $wpdb->get_var( "SELECT code FROM $wpdb->pmpro_discount_codes WHERE id = '" . (int)$group_code->code_parent . "' LIMIT 1" );
+		$code_parent = $wpdb->get_var( $wpdb->prepare( "SELECT code FROM $wpdb->pmpro_discount_codes WHERE id = %d LIMIT 1", $group_code->code_parent ) );
 		if ( ! empty( $code_parent) ) {
 			return pmpro_checkDiscountCode($code_parent, $level_id);
 		}
@@ -233,19 +241,21 @@ function pmpro_groupcodes_pmpro_discount_code_level( $code_level, $discount_code
 	}
 
 	// Check if a group code was used.
+	// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Read-only lookup of the discount code entered at checkout / applydiscountcode.php; PMPro core validates the checkout request.
 	$group_code = false;
 	// Check prefixed parameter in PMPro v3.0+.
 	if ( ! empty( $_REQUEST['pmpro_discount_code'] ) ) {
-		$group_code = pmpro_groupcodes_getGroupCode( $_REQUEST['pmpro_discount_code'] );
+		$group_code = pmpro_groupcodes_getGroupCode( sanitize_text_field( wp_unslash( $_REQUEST['pmpro_discount_code'] ) ) );
 	}
 	// Check the non-prefixed paramter for PMPro < 3.0.
 	if ( empty( $group_code ) && ! empty( $_REQUEST['discount_code'] ) ) {
-		$group_code = pmpro_groupcodes_getGroupCode( $_REQUEST['discount_code'] );
+		$group_code = pmpro_groupcodes_getGroupCode( sanitize_text_field( wp_unslash( $_REQUEST['discount_code'] ) ) );
 	}
 	// Check the code parameter for the applydiscountcode.php service.
 	if ( empty( $group_code ) && ! empty( $_REQUEST['code'] ) ) {
-		$group_code = pmpro_groupcodes_getGroupCode( $_REQUEST['code'] );
+		$group_code = pmpro_groupcodes_getGroupCode( sanitize_text_field( wp_unslash( $_REQUEST['code'] ) ) );
 	}
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 	// If we don't have a group code, bail.
 	if ( empty( $group_code ) ) {
@@ -258,7 +268,7 @@ function pmpro_groupcodes_pmpro_discount_code_level( $code_level, $discount_code
 	}
 
 	// Get the parent code.
-	$parent_code = $wpdb->get_row( "SELECT * FROM $wpdb->pmpro_discount_codes WHERE id = '" . esc_sql( $group_code->code_parent ) . "' LIMIT 1" );
+	$parent_code = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $wpdb->pmpro_discount_codes WHERE id = %d LIMIT 1", $group_code->code_parent ) );
 	if ( empty( $parent_code ) ) {
 		return $code_level;
 	}
@@ -306,7 +316,7 @@ function pmpro_groupcodes_pmpro_discount_code_used( $order ) {
 	}
 
 	// Clean up any discount code uses that were already created for this order.
-	$wpdb->query( "DELETE FROM $wpdb->pmpro_discount_codes_uses WHERE order_id = '" . intval( $order->id ) . "'" );
+	$wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->pmpro_discount_codes_uses WHERE order_id = %d", $order->id ) );
 
 	// If the discount code used does not have a parent code, bail.
 	$group_code = pmpro_groupcodes_getGroupCode( $level->discount_code );
@@ -325,8 +335,7 @@ function pmpro_groupcodes_pmpro_discount_code_used( $order ) {
 	) );
 
 	// Update the group discount code uses.
-	$sqlQuery = "UPDATE $wpdb->pmpro_group_discount_codes SET order_id = '" . intval( $order->id ) . "'WHERE code='" . esc_sql( $group_code->code ) . "' LIMIT 1";
-	$wpdb->query( $sqlQuery );
+	$wpdb->query( $wpdb->prepare( "UPDATE $wpdb->pmpro_group_discount_codes SET order_id = %d WHERE code = %s LIMIT 1", $order->id, $group_code->code ) );
 
 	// Update the order notes (legacy functionality, the custom table is the "source of truth").
 	$order->notes .= "\n---\n{GROUPCODE:" . $group_code->code . "}\n---\n";
@@ -395,8 +404,8 @@ function pmpro_groupcodes_pmpro_discountcodes_extra_cols_body( $code ) {
 	
 	// Get number of group codes and number of codes that have been used.
 	if ( $code->id > 0 ) {
-		$number_total_codes = $wpdb->get_var( "SELECT COUNT(code) FROM $wpdb->pmpro_group_discount_codes WHERE code_parent = '" . esc_sql( $code->id ) . "'" ); 
-		$number_used_codes = $wpdb->get_var( "SELECT COUNT(code) FROM $wpdb->pmpro_group_discount_codes WHERE code_parent = '" . esc_sql( $code->id ) . "' AND order_id > 0" ); 
+		$number_total_codes = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(code) FROM $wpdb->pmpro_group_discount_codes WHERE code_parent = %d", $code->id ) ); 
+		$number_used_codes = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(code) FROM $wpdb->pmpro_group_discount_codes WHERE code_parent = %d AND order_id > 0", $code->id ) ); 
 	}
 	?>
 	<td>
